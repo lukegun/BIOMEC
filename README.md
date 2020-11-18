@@ -1,2 +1,2 @@
 # BIOMEC
-Bayesian Inference and Optimisation for the Monash electrochemical Simulator
+Bayesian Inference and Optimisation for the Monash electrochemical Simulator (MECSim)
