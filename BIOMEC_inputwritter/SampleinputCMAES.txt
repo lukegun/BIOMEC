@@ -1,0 +1,80 @@
+!Settings   (value,min,max,log sensitivity, parameter code, repeat line)
+STANDARD Baye_HarmPerFit CMAES 	 	 	! Header declaration (tot Logic Method)
+5	! Number of varibles
+6.5e-06,5.0e-06, 8.0e-6,0,22,1
+8.00e-01, 0.790e0, 0.810e0, 0,33, 1
+7.0e-01, 1.0e-02, 10.0, 1, 34,1
+0.5, 0.3, 0.7, 0, 35,1
+0.70E-05, 0.50E-05, 0.90E-05, 0, 51,1
+1		! number of scaled varibles
+1.0,1,22,2		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
+0					! Number of functional scaling
+5.5,0,0,0,0,0,0,0	! Bandwidth Fundimental (BANDWIDTH FIRST)
+4,4,4,4,4,4,4,4	! Harmonic Bandwidth REPEAT (lowest freq to highest)
+0,0,0,0,0,0,0,0	! Fundimental wieghts
+0,0,0,0,1,1,1,1 ! Harmonic Wieghts REPEAT (lowest freq to highest)
+2,12			! Truncation points (sec) (0,MAX; for not applicable)
+1		! Fitting method used  (0 = absdiff, 1 = %diff)			THIS CAN BE PHASED OUT
+1		! Experimental input type (0 = MECSim, 1 = FTACV, 2=CHI)
+4		! number of multiprocesses to be used ( DO NOT GO OVER N = int(3*log(#varibles))
+14		! 2^N comparison data points per current	
+0.01	! tolx, value of x as %*range/2 needed before fit is meet (0.05,0.025,0.01 recomendand)
+0.33	! initial sigma value as %*range (0.33 recomendanded)
+
+MECSim settings   ! DO NOT REMOVE THESE SEPERATORS
+298.85
+63.43
+0.55
+1.0
+1
+0.06705523
+17
+0
+1
+0
+0
+0
+4000
+0.10
+10.0
+0.005e0
+25.6e0
+0
+0
+2
+0.0
+0.0
+0.50
+-0.50
+1
+0.0656
+1.0e0
+1.0e-4
+0.50e0
+0.001e0
+0.10e0
+100.0
+1.0e-1
+1.0e2
+1.0e-5
+1
+80, 80.99
+2
+0.8030e-6, 6.5e-06, 0
+0.0e0, 6.5e-06, 0
+4
+0.0e0
+0.70E-05
+0
+0
+0
+0
+0, 1, -1, 1.0e0, 1.0e0,8.00e-01,0.2,0.55
+
+Experimental settings ! {NameEX.txt} Repet for triplicates effects method Important do not remove this line
+CommercalBDD/Data/81Hz/ACGC9.txt
+CommercalBDD/Data/81Hz/ACGC12.txt
+CommercalBDD/Data/81Hz/ACGC15.txt
+CommercalBDD/Data/81Hz/ACGC17.txt
+CommercalBDD/Data/81Hz/ACGC19M.txt
+

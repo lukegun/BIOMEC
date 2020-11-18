@@ -1,0 +1,92 @@
+!Settings   (value,min,max,log sensitivity, parameter code, repeat line)
+STANDARD Baye_HarmPerFit ADMCMC 	 	 	! Header declaration (tot Logic Method)
+5	! Number of varibles
+3.711036e-06, 1.0e-06, 6.5e-6,0,22,1
+8.357092e+01, 83, 85.2, 0, 42, 2
+8.375236e+01, 81.0, 85.5, 0, 42, 4
+1.089867e+00, 1.0e-01, 3,  0, 34, 1
+1.007288e+00, 1.0e-01, 3, 0, 34, 3
+4		! number of scaled varibles
+1.0,1,22,2		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
+1.0,1,22,3		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
+1.0,1,22,4		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
+1.0,1,22,5		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
+2					! Number of functional scaling
+1,2,0,10e+8	! functional parameter (function, varible number, paired value scalar, {paired value, varible row})
+1,3,0,10e+8	! functional parameter (function, varible number, paired value scalar, {paired value, varible row})
+5.5,0,0,0,0,0	! Bandwidth Fundimental (BANDWIDTH FIRST)
+4,4,4,4,4,4	! Harmonic Bandwidth REPEAT (lowest freq to highest)
+0,0,0,0,0,0	! Fundimental wieghts
+1,1,1,1,1,1	! Harmonic Wieghts REPEAT (lowest freq to highest)
+1,12.5			! Truncation points (sec) (0,MAX; for not applicable)
+1			! Fitting method used  (0 = absdiff, 1 = %diff)
+1			! Experimental input type (0 = MECSim, 1 = FTACV, 2=CHI)
+4			! Number of cores to be used
+14			! 2^N comparison data points per current
+250			! MCMC initial prior sampling per varible
+25000		! number of trail for overall chain
+0.25		! burnin period as ratio of chain legth (%/100)
+1.0e-6		! noise (%/100) for each frequency (lowest freq to highest)
+4			! number of chains to run
+
+MECSim settings   ! DO NOT REMOVE THESE SEPERATORS
+292.25
+70
+-0.250
+-0.920
+1
+0.09984
+16
+0
+1
+0
+0
+0
+4000
+0.10
+10.0
+0.005e0
+25.6e0
+0
+0
+2
+0.5
+0.5
+0.50
+-0.50
+1
+0.0656
+1.0e0
+1.0e-4
+0.50e0
+0.001e0
+0.10e0
+100.0
+1.0e-1
+1.0e2
+1.0e-5
+1
+60.0e+00, 9.02e+00
+5
+1.93214E-07, 3.10376e-06, 0
+0.0e0, 3.10376e-06, 0
+0.0e0, 3.10376e-06, 0
+0.0e0, 3.10376e-06, 0
+0.0e0, 3.10376e-06, 0
+4
+0.0e0
+6.66085107E-05
+1.77289619E-04
+3.39711494E-04
+2.81616723E-04
+8.68997287E-05
+0, -1, 1, 0, 0, 0, 1.0e0, 9.275386e+07,-6.04e-01,2,5.0e-01
+2, 0, -1, 1, 0, 0,9.499526e+7,9.737851e+06, -0.201e0, 6.0e-1, 0.5e0
+0, 0, 0, -1, 1, 0, 1.0e0, 1.0e0,-8.03e-01,3,5.0e-01
+2, 0, 0, 0, -1, 1,4.29993e+7,3.749789e+06, -0.201e0, 25.0e-1, 0.5e0
+
+
+Experimental settings ! {NameEX.txt} Repet for triplicates effects method Important do not remove this line
+EC_CAT/Data/02POM_Na/05/ACGC4txt.txt
+EC_CAT/Data/02POM_Na/05/ACGC5txt.txt
+EC_CAT/Data/02POM_Na/05/ACGC6Mtxt.txt
