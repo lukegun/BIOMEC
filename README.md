@@ -6,7 +6,11 @@ Bayesian Inference and Optimisation for the Monash electrochemical Simulator (ME
 monash electrochemistry group (SOME LINK) of Assosiate Professor Jie Zhang and Emeratious Professor Alan Bond.
 
 It is an automatic plaform for parameterisation that uses mathmatical optimisation and Bayesian Inference to calculate parameters involved in the electrochemical simulation.
-Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applied in the PAPER. BIOMEC allows for automated parameterisation of DC and FTAC voltammetery, allowing highly dimensional fits of the 
+Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applied in the PAPER. BIOMEC allows for automated parameterisation of DC and FTAC voltammetery, allowing highly dimensional fits of the posteriour distrabution.
+
+BIOMEC uses [PINTS](https://github.com/pints-team/pints) for univariant Bayesian inference.
+
+For information of current uses see LIT REVIEW PAPER
 
 ## Installing BIOMEC image
 The code is run in a singularity container which works for Unbuntu/UNIX and MAC (untested) OS systems.
