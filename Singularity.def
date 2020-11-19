@@ -50,4 +50,3 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 	
 	# change permissions of files
     chmod -R 777 ${SINGULARITY_ROOTFS}/runcode
-
