@@ -25,7 +25,7 @@ this will generate and ouput file with plots and results once completed
 
 
 ## Running BIOMEC
-PDF tutorial or youube videos to come.
+PDF tutorial or youtube videos to come.
 
 
 ## Supporting Code
