@@ -9,19 +9,19 @@ It is an automatic plaform for parameterisation that uses mathmatical optimisati
 Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applied in the PAPER. BIOMEC allows for automated parameterisation of DC and FTAC voltammetery, allowing highly dimensional fits of the 
 
 ## Installing BIOMEC image
-The code is run in a singularity container which works for Unbuntu/UNIX and maybe MAC OS systems and has been tested in version 3.1.
-Singularity will need to be installed to use the image seen where the guide is seen in the following [website](https://sylabs.io/guides/3.6/user-guide/quick_start.html) or downloaded from conectd singularity hub.
+The code is run in a singularity container which works for Unbuntu/UNIX and MAC (untested) OS systems.
+Singularity will need to be installed to use the image. Where the guide is seen in the following [website](https://sylabs.io/guides/3.6/user-guide/quick_start.html) or downloaded from connected singularity hub.
 
-Once singularity has been installed download the downloaded BIOMEC file and run the code to create the BIOMEC image
+Once singularity has been installed, download the BIOMEC file and run the code to create the BIOMEC container (which should be around 580MB). 
 
 ```
 $ sudo singularity build BIOMEC.simg Singularity.def
 ```
-Once the image is built the imput file (input.txt) can be passed to the image by using the following command
+Once the image is built the imput file (input.txt) can be passed to the image by using the following command.
 ```
 $ ./BIOMEC.simg input.txt
 ```
-this will generate and ouput file with plots and results once completed
+This will generate and ouput file with plots and results once completed.
 
 
 ## Running BIOMEC
@@ -41,7 +41,7 @@ Experimental data must be a multiple of two.
 
 ## License
 
-BIOMEC analysis/python code is open source under GPL-3.0 License, with MECSim developed by Gareth kennedy and contaned in the mecsim.cpython-37m-x86_64-linux-gnu.so is closed source.
+BIOMEC analysis/python code is open source under GPL-3.0 License, with MECSim developed by Gareth Kennedy and contaned in the mecsim.cpython-37m-x86_64-linux-gnu.so is closed source.
 
 ## Get in touch
 For Questions/Bugs Email me at luke.gundry1@monash.edu.
