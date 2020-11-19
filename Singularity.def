@@ -5,7 +5,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 %setup
     mkdir -p ${SINGULARITY_ROOTFS}/runcode  
 	cp -R BIOMEC/Analysiscode/. ${SINGULARITY_ROOTFS}/runcode/
-	mv BIOMEC/mecsim.cpython-37m-x86_64-linux-gnu.so ${SINGULARITY_ROOTFS}/runcode/
+	cp BIOMEC/mecsim.cpython-37m-x86_64-linux-gnu.so ${SINGULARITY_ROOTFS}/runcode/mecsim.cpython-37m-x86_64-linux-gnu.so
 
 %files
     
@@ -20,7 +20,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     fi
 	
 	echo "running"
-	python3 ${SINGULARITY_ROOTFS}/runcode/PINTS_MECsim.py $1
+	python3.7 ${SINGULARITY_ROOTFS}/runcode/PINTS_MECsim.py $1
     
 	echo "finished"
     
@@ -28,6 +28,8 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 %labels 
     AUTHOR Luke Gundry
 	MECSim Aurthor: Gareth Kennedy
+	
+	Currenly set up to run on python 3.7 in unbuntu bionic working in a singulrity Version 3.1 container hough higher should work
 
 %post
     
@@ -41,25 +43,11 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 	apt-get -y --force-yes install bc
     apt-add-repository  universe
     apt-get update
-    apt-get -y --force-yes install python3-pip python-dev
-    python3 -m pip install --upgrade pip
-    python3 -m pip install pandas numpy scipy cma seaborn matplotlib
-	python3 -m pip install pints
-	
-	# Set up the MECSIM CODE
-	#cd ${SINGULARITY_ROOTFS}/runcode/MECSim_source
-	#bash MECSim-set.sh
-	#mv mecsim.cpython-36m-x86_64-linux-gnu.so ${SINGULARITY_ROOTFS}/runcode/
-	#rm -R ${SINGULARITY_ROOTFS}/runcode/MECSim_source/
-	#cd ${SINGULARITY_ROOTFS}/runcode
-	#ls
-	
-	# Install PINTS
-	#cd ${SINGULARITY_ROOTFS}/pints-master/
-	#python3 -m pip install .
+    apt-get -y --force-yes install python3-pip python3.7-dev
+    python3.7 -m pip install --upgrade pip
+    python3.7 -m pip install pandas numpy scipy cma seaborn matplotlib
+	python3.7 -m pip install pints
 	
 	# change permissions of files
     chmod -R 777 ${SINGULARITY_ROOTFS}/runcode
-	
-	cd ${SINGULARITY_ROOTFS}/runcode
 
