@@ -27,6 +27,16 @@ $ ./BIOMEC.simg input.txt
 ```
 This will generate and ouput file with plots and results once completed.
 
+## Generating input files
+inputwritter.py can guide users unfamilaur with generating input files to create an input file for the BIOMEC container, this program is contained in the BIOMEC_inputwritter.
+Simply run the file using the following command and follow the prompts and an input file will be generated.
+```
+$ python3 inputwritter.py
+```
+The output of this file will then be of the form <input.txt> though other names will work.
+It is important that a copy of the MECSim Master.inp file is present in the folder you run inputwritter.py as the MECSim input file is required for BIOMEC to run.
+
+Once comfortable with writting the input file it is recommended to use any text editor. 
 
 ## Running BIOMEC
 PDF tutorial or youtube videos to come.
@@ -40,8 +50,8 @@ MCMC PLOTTER: code to plot the mcmc output chains from the Iter_log.txt to image
 Cite the following paper if you have used this package in a publication PAPER
 
 ## Known Issues
-Custom waveforms have not been tested and Estart and End cannot equal zero.
-Experimental data must be a multiple of two.
+ - Custom waveforms have not been tested and Estart and End cannot equal zero.
+ - Number of data poins in experimental data must be a multiple of two.
 
 ## License
 
