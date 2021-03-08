@@ -10,7 +10,7 @@ Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applie
 
 BIOMEC uses [PINTS](https://github.com/pints-team/pints) for univariant Bayesian inference.
 
-For information of current uses see [original Bayesian inference paper](https://doi.org/10.1002/celc.201700678) or our most recent [featured article](https://doi.org/10.1039/D0CC07549C) 
+For information of current uses see [original Bayesian inference paper](https://doi.org/10.1002/celc.201700678) or our most recent [featured article](https://doi.org/10.1039/D0CC07549C).
 
 ## Installing BIOMEC image
 The code is run in a singularity container which works for Unbuntu/UNIX and MAC (untested) OS systems.
@@ -43,15 +43,15 @@ PDF tutorial or youtube videos to come.
 
 
 ## Supporting Code
-BIOMEC_inputwritter: Basic terminal/ .exe code for guiding uses in writting the input files for BIOMEC
-MCMC PLOTTER: code to plot the mcmc output chains from the Iter_log.txt to images 
-
-## Citing
-Cite the following paper if you have used this package in a publication PAPER
+ - BIOMEC_inputwritter: Basic terminal/ .exe code for guiding uses in writting the input files for BIOMEC
+ - MCMC PLOTTER: code to plot the mcmc output chains from the Iter_log.txt to images 
 
 ## Known Issues
  - Custom waveforms have not been tested and Estart and End cannot equal zero.
  - Number of data poins in experimental data must be a multiple of two.
+
+## Citing
+Please, cite [Paper title FIX]() if you have used this package in a publication, which will be updated once the paper is published.
 
 ## License
 
