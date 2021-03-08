@@ -40,8 +40,15 @@ shutil.copy(input_name,outputfname)
 # Collects input data
 settings, data, Exp_data = Scripgen.globalinreader(input_name)  # Takes the input data and seperates to its sections
 
+#number of experimental inputs
+Expnumber = len(Exp_data)
+
 # changes CMA_settings to usable data
 header, var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime = tpseries.PINTS_Varibles(settings)
+
+#bandwidth adjustments to standardize the bandwidth notation
+for i in range(1,bandwidth.shape[0]):
+    bandwidth[i][:] = bandwidth[i][:]/2
 
 spaces = Scripgen.data_finder(data)
 
@@ -53,14 +60,16 @@ Excurr, Exp_t,Extime,sigma = tpseries.Exp_data_spliter(Exp_data, datatype, AC_fr
 harm_weights = Scripgen.harm_weights_trans(harm_weights)
 
 DCAC_method = MLsp.ACDC_method(AC_amp, op_settings)
-print("Initial Set up succesful, starting " + header[2] + " using " + header[1] + "objective function.")
+print("Initial Set up succesful, starting " + header[2] + " using " + header[1] + " objective function.")
 # General truncation of experiment files
-if DCAC_method[0] == 1 and (header[1] == 'HarmPerFit' or header[1] == 'HEPWsigma' or header[1] == 'Baye_HarmPerFit'):  # AC method {DC = 0, AC = 1} FIX
+if DCAC_method[0] == 1 and (header[1] == 'HarmPerFit' or header[1] == 'HEPWsigma' or header[1] == 'Baye_HarmPerFit' or header[1] == 'Bayes_ExpHarmPerFit'):  # AC method {DC = 0, AC = 1} FIX
     # Excurr truncates and sets up time truncation and time
-    Excurr, sigma, Nsimdeci, Nex = MLsp.EXPharmtreatment(Excurr,sigma,Extime, truntime, op_settings,header[1])
+
+    Excurr, sigma, Nsimdeci, Nex = MLsp.EXPharmtreatment(Excurr,sigma,Extime, truntime, op_settings)
 
     # Excurr is carried over harmstore set up previous function
 elif header[1] == 'TCDS':
+
     # truncates and passes around experimental harmonics and find truncation points
     TotalExcurr = Excurr # here so that we can plot the output harmonics
     Excurr, Nsimdeci, Nex = MLsp.EXPtotcurrtreatment(Excurr, Extime, truntime, op_settings)
@@ -122,7 +131,7 @@ if header[1] == 'HarmPerFit':  # AC method
 elif header[1] == 'Baye_HarmPerFit':  # AC method
 
     # correction to the truncated harmonics of sigma
-    sigma = tpseries.Harm_sigma_normal(Excurr,sigma)
+    sigma = tpseries.Harm_sigma_normal(Excurr,sigma,Expnumber)
 
     if header[2] == 'CMAES':  # CMA-ES for current total comparison
 
@@ -164,7 +173,7 @@ elif header[1] == 'Baye_HarmPerFit':  # AC method
                    'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights}
 
         # Results are the best fit and logtot are all trails tried
-        Mchains, Mrate, MErr = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
+        Mchains, Mrate, MErr, Mharmperfit = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
 
         completion_time = (time.time() - t1) / 60
 
@@ -175,10 +184,109 @@ elif header[1] == 'Baye_HarmPerFit':  # AC method
         dist = []
         accept_rate = sum(Mrate) / len(Mrate)
         Err = []
+
+        harmperfit = [] # this is aonly for this method
         for i in range(int(op_settings[4] / op_settings[7])):
             for j in range(op_settings[7]):
                 dist.append(Mchains[j][i])
                 Err.append(MErr[j][i])
+                harmperfit.append(Mharmperfit[j][i])
+
+        # this is only for the harmonic fit
+        MCMCmod.MCMC_harmfit_logger(outputfname + '/' + 'MCMC_harmper_log.txt', harmperfit)
+
+        dist = np.array(dist)
+        Err = np.array(Err)
+
+        MCMCmod.MCMC_dist_logger(outputfname+'/'+'Iter_log.txt', dist, Err)  # saves the distrabution to a text file
+
+        # something to calculate the covarence and statistic values
+        MCMC_mean, colapsed_std, cal_covar, covar_std, corr_matrix = MCMCmod.covarinence_stat(dist, op_settings[5])
+
+        fit = MCMC_mean  # sets up for printed inp file
+
+        # prints and calculates the series of R-gelman statistic
+        if op_settings[7] != 1:
+            R_hat = MCMCmod.Gel_rub_test(outputfname+'/'+'R_hat',Mchains, Err, op_settings[5])
+        else:
+            R_hat = []
+
+        # something to calculate the percentage best fit of the mean calculated harmonic
+        Perr = tpseries.MCMC_harmfitpercentage(MCMC_mean, Excurr, True, **MEC_set)
+
+        # something to print output text
+        standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
+                                               colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
+
+elif header[1] == 'Bayes_ExpHarmPerFit':  # AC method
+
+    EXPperrErr, sigma, EXPperrmean = tpseries.Harm_sigma_percentge(Exp_data, Excurr, truntime, AC_freq, bandwidth, spaces,  op_settings)
+
+    # correction to the truncated harmonics of sigma
+    #sigma = tpseries.Harm_sigma_normal(Excurr,sigma,Expnumber)
+
+    if header[2] == 'CMAES':  # CMA-ES for current total comparison
+
+        freq_set = {'harm_weights': harm_weights, 'bandwidth': bandwidth}  # here to allow functional ACDC functionality
+
+        MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data':Excurr,
+                   'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
+                   'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
+                   'harm_weights': harm_weights,'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq':AC_freq,
+                   "EXPperrErr":EXPperrErr}
+
+        # Results are the best fit and logtot are all trails tried
+        results, logtot = standCMA.STAND_CMAES_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
+
+        completion_time = (time.time() - t1) / 60
+
+        # plot logger file
+        Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+
+        DCAC_method[0] = 1  # sets up to use the Perr method
+        MEC_set['DCAC_method'] = DCAC_method
+        var_out, Perr = standCMA.CMA_output(results, **MEC_set)
+
+        fit = var_out  # sets up for printed inp file
+
+        # sets up mean CMA_es values and STD
+        mean_var_out = CMAmod.CMA_meanval(results, var)
+
+        #nned to fix this
+
+        # treat output here
+        standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+                                           results, mean_var_out, DCAC_method,Perr,header,MEC_set)
+
+    elif header[2] == 'ADMCMC':  # CMA-ES for current total comparison
+
+        MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method,
+                   'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
+                   'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
+                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights,"EXPperrErr":EXPperrErr}
+
+        # Results are the best fit and logtot are all trails tried
+        Mchains, Mrate, MErr, Mharmperfit = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
+
+        completion_time = (time.time() - t1) / 60
+
+        # creates the parameters output files
+        tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_log.txt', Mchains)  # prints the multi chain output
+
+        # combines and plots the multplie chains to one
+        dist = []
+        accept_rate = sum(Mrate) / len(Mrate)
+        Err = []
+
+        harmperfit = [] # this is aonly for this method
+        for i in range(int(op_settings[4] / op_settings[7])):
+            for j in range(op_settings[7]):
+                dist.append(Mchains[j][i])
+                Err.append(MErr[j][i])
+                harmperfit.append(Mharmperfit[j][i])
+
+        # this is only for the harmonic fit
+        MCMCmod.MCMC_harmfit_logger(outputfname + '/' + 'MCMC_harmper_log.txt', harmperfit)
 
         dist = np.array(dist)
         Err = np.array(Err)
@@ -450,7 +558,7 @@ elif header[1] == 'HEPWsigma':
                    'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights}
 
         # Results are the best fit and logtot are all trails tried
-        Mchains, Mrate, MErr = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
+        Mchains, Mrate, MErr,Mharmperfit = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
 
         completion_time = (time.time() - t1) / 60
 

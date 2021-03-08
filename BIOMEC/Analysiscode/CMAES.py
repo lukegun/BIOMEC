@@ -36,6 +36,7 @@ class standard_CMAES_Model(object):
 
         if self.Method == 'HEPWsigma' or self.Method == 'Baye_HarmPerFit':
             self.EXSigma = kwargs.pop('Exsigma')
+
         elif self.Method == 'TCDS' or self.Method == 'FTC' or self.Method == 'Log10FTC':
             var = kwargs.get('var')
             Nvar = len(var.iloc[:][0])
@@ -44,6 +45,9 @@ class standard_CMAES_Model(object):
                     self.EXSigma = i
                     self.Bayesfit = True
 
+        elif self.Method == 'Bayes_ExpHarmPerFit':
+            self.EXPperrErr = kwargs.pop("EXPperrErr")
+            self.EXSigma = kwargs.pop('Exsigma')
 
 
     def simulate(self, *args):
@@ -93,8 +97,14 @@ class standard_CMAES_Model(object):
 
         elif self.Method == 'Baye_HarmPerFit':
             # Calculates percentage best fit
-            Loss = tpseries.Baye_HarmPerFit(self.EXcurr, Scurr, self.EXSigma,**self.kwargs)
+            # harmonic percentage traking hasn't been set up for CMA-ES yet
+            Loss, harmperfit = tpseries.Baye_HarmPerFit(self.EXcurr, Scurr, self.EXSigma,**self.kwargs)
             Loss = abs(Loss)    # minimization for CMA-ES algorithim
+
+        elif self.Method == 'Bayes_ExpHarmPerFit':
+            # calculates harmonic percentage error based on simulation
+            Loss, harmperfit = tpseries.Baye_ExpHarmPerFit(self.EXcurr, Scurr, self.EXSigma, self.EXPperrErr,**self.kwargs)
+            Loss = abs(Loss)
 
         else:
             print("incorrect fitting function header used")
@@ -262,7 +272,6 @@ def STAND_CMAES_TOTCURR(var, op_settings, Method,MEC_set, Excurr):
 
             FIT = p.map(run, listin)
 
-        #print(X2) # why the fuck does X@ change
         es.tell(X, FIT)  # Does the CMA-ES fitting
 
         # makes a output file
@@ -418,6 +427,7 @@ def PINT_CMAES_TOTCURR_output(filename,t2, space_holder, var_out, res, mean_var_
     # CMAstd = res[6] STD cannot be done due to the assymetrical propities of the transform
     f.write('CMA-ES stopping criteria:\n')
     print(res)
+    # this has ben removed from
     for i in res[7]:
         f.write('{'+i+' : ')
         f.write('%f}' %res[7][i])

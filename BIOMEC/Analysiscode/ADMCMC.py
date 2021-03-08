@@ -72,11 +72,19 @@ class standard_ADMCMC_Model():
         self.EXcurr = args[0]
         self.Method = args[1]
 
+        # defines if method is a harmonic based method (needed to trac percentage error)
         if self.Method == 'HEPWsigma' or self.Method == 'Baye_HarmPerFit':
             self.EXSigma = kwargs.pop('Exsigma')
-
+            self.Harmonicmethod = True
+            self.harmfitstore = []
+        elif self.Method == 'Bayes_ExpHarmPerFit':
+            self.EXPperrErr = kwargs.pop("EXPperrErr")
+            self.EXSigma = kwargs.pop('Exsigma')
+            self.Harmonicmethod = True
+            self.harmfitstore = []
         else:
-            pass
+            self.Harmonicmethod = False
+
 
     # runs the statistical chains used in the inference sampling
     def ADMCMC_chain(self, *args):
@@ -98,7 +106,10 @@ class standard_ADMCMC_Model():
 
         chain, rate, Err = self.adaptive_sampling(chain, Err,covar, prior_range, Nsamp, NMax, Naccept)
 
-        return chain, rate, Err
+        if self.Harmonicmethod:
+            return chain, rate, Err, self.harmfitstore
+        else:
+            return chain, rate, Err
 
     def simulate(self, *args):
         # Run a simulation with the given parameters for the
@@ -113,7 +124,15 @@ class standard_ADMCMC_Model():
 
         elif self.Method == 'Baye_HarmPerFit':
 
-            Loss = tpseries.Baye_HarmPerFit(self.EXcurr, Scurr, self.EXSigma, **self.kwargs)
+            Loss, harmfitstore = tpseries.Baye_HarmPerFit(self.EXcurr, Scurr, self.EXSigma, **self.kwargs)
+
+            return Loss, harmfitstore
+
+        elif self.Method == 'Bayes_ExpHarmPerFit':
+            # calculates harmonic percentage error based on simulation
+            Loss, harmfitstore = tpseries.Baye_ExpHarmPerFit(self.EXcurr, Scurr, self.EXSigma, self.EXPperrErr,**self.kwargs)
+
+            return Loss, harmfitstore
 
         else:
             print("incorrect fitting function header used")
@@ -132,7 +151,12 @@ class standard_ADMCMC_Model():
         phit = [np.array(phi0)]  # sets the initial mean
         Naccept = 0  # acceptance counter
 
-        curr_fit = self.simulate(phi0)  # experimental data gets passed in kwargs
+        if self.Harmonicmethod: # goes into harmonic percentage fit
+            curr_fit, harmcurrentfit = self.simulate(phi0)  # experimental data gets passed in kwargs
+            self.harmfitstore.append(harmcurrentfit)
+        else:
+            curr_fit = self.simulate(phi0)
+
         Err.append(curr_fit)
 
         while t != N + 1:
@@ -143,7 +167,10 @@ class standard_ADMCMC_Model():
             if prob != 0:  # checks to see if position is possible
 
                 # runs simulation
-                logtrial = self.simulate(phi_trail)
+                if self.Harmonicmethod:  # goes into harmonic percentage fit
+                    logtrial, harmtestfit = self.simulate(phi_trail)
+                else:
+                    logtrial = self.simulate(phi_trail)
 
                 # Probability comparison code
                 comp = np.exp(logtrial - curr_fit)
@@ -155,15 +182,23 @@ class standard_ADMCMC_Model():
                     phit.append(phi_trail)
                     curr_fit = logtrial  # resets the sum
                     Err.append(curr_fit)
+                    if self.Harmonicmethod:
+                        harmcurrentfit = harmtestfit
+                        self.harmfitstore.append(harmcurrentfit)
+
                     Naccept += 1  # accept rate
 
                 else:
                     phit.append(phit[-1])
                     Err.append(curr_fit)
+                    if self.Harmonicmethod:
+                        self.harmfitstore.append(harmcurrentfit)
 
             else:
                 phit.append(phit[-1])  # accept the current state
                 Err.append(curr_fit)
+                if self.Harmonicmethod:
+                    self.harmfitstore.append(harmcurrentfit)
 
             t += 1
 
@@ -179,7 +214,11 @@ class standard_ADMCMC_Model():
         # define important parameters
         mean = np.array(phit[0])  # watch THIS
         a = 1
-        curr_fit = self.simulate(phit[-1])  # sets up s0 point
+
+        if self.Harmonicmethod: # goes into harmonic percentage fit
+            curr_fit, harmcurrentfit = self.simulate(phit[-1])  # experimental data gets passed in kwargs
+        else:
+            curr_fit = self.simulate(phit[-1])
 
         while t != NMax:
 
@@ -193,7 +232,10 @@ class standard_ADMCMC_Model():
             if prob != 0:  # checks to see if position is possible
 
                 # runs simulation
-                logtrial = self.simulate(phi_trail)
+                if self.Harmonicmethod:  # goes into harmonic percentage fit
+                    logtrial, harmtestfit = self.simulate(phi_trail)  # experimental data gets passed in kwargs
+                else:
+                    logtrial = self.simulate(phi_trail)
 
                 # Probability comparison code
                 comp = np.exp(logtrial - curr_fit)
@@ -205,17 +247,24 @@ class standard_ADMCMC_Model():
                     phit.append(phi_trail)
                     curr_fit = logtrial  # resets the sum
                     Err.append(curr_fit)
+                    if self.Harmonicmethod:
+                        harmcurrentfit = harmtestfit
+                        self.harmfitstore.append(harmcurrentfit)
                     accepted = 1
                     Naccept += 1  # counter for num accepted
 
                 else:
                     phit.append(phit[-1])
                     Err.append(curr_fit)
+                    if self.Harmonicmethod:
+                        self.harmfitstore.append(harmcurrentfit)
                     accepted = 0
 
             else:
                 phit.append(phit[-1])  # accept the current state
                 Err.append(curr_fit)
+                if self.Harmonicmethod:
+                    self.harmfitstore.append(harmcurrentfit)
                 accepted = 0
 
             # iteration probability modifiers
@@ -369,12 +418,15 @@ def STAND_ADMCMC_TOTCURR(var, op_settings, Method, MEC_set, Excurr):
     Mchains = []
     Mrate = []
     MErr = []
+    Mharmperfit = []
     for i in range(Ncore):
         Mchains.append(output[i][0])
         Mrate.append(output[i][1])
         MErr.append(output[i][2])
+        if Method == 'HEPWsigma' or Method == 'Baye_HarmPerFit'or Method == 'Bayes_ExpHarmPerFit':
+            Mharmperfit.append(output[i][3])
 
-    return Mchains, Mrate, MErr
+    return Mchains, Mrate, MErr, Mharmperfit
 
 # PINTS ADMCMC TOTCURR Runner
 def PINT_ADMCMC_TOTCURR(op_settings, DCAC_method, MEC_set,  Excurr):

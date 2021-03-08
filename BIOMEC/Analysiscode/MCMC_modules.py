@@ -521,6 +521,32 @@ def MCMC_dist_logger(filename, phit,Error):
     
     return
 
+
+# Prints the intergrated values of phit to a text file
+def MCMC_harmfit_logger(filename, harmperfit):
+    f = open(filename, "w+")
+
+    Nv = len(harmperfit)  # number of points
+    Nd = len(harmperfit[0])  # number of varibles
+
+    i = 0
+    while i != Nv:
+        j = 0
+        holder = 0
+        while j != Nd:
+            holder += harmperfit[i][j]
+            x = format_e(harmperfit[i][j])
+            f.write('%s\t' % (x))
+            j += 1
+
+        f.write('%s\n' % (format_e(holder/Nd)))  # prints error
+
+        i += 1
+
+    f.close()
+
+    return
+
 # prints the multichain output to another txt file
 def MCMC_para_logger(filename, multi_res,Err):
     

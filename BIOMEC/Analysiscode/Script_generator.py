@@ -680,12 +680,12 @@ def MECoutsetter(data,AC_freq, AC_amp):
 def format_e_out(n):
 
     a = '%E' % n
-    fucker = a.split('E')[0].rstrip('0')
-    for i in range(len(fucker),8):
-        fucker += '0'
-    fucker +='E' + a.split('E')[1]
+    v = a.split('E')[0].rstrip('0')
+    for i in range(len(v),8):
+        v += '0'
+    v +='E' + a.split('E')[1]
 
-    return  fucker
+    return  v
 
 # writes the MECsim output to a txt file compadable with POT
 def outputwriter(filename,startpart,voltage,Scurr,timev):

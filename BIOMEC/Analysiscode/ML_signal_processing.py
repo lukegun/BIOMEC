@@ -945,7 +945,7 @@ def find_nearest(array, value):
 
 
 # truncates and passes around experimental harmonics and find truncation points
-def EXPharmtreatment(EX_hil_store,sigma,Extime, truntime, op_settings,method):
+def EXPharmtreatment(EX_hil_store,sigma,Extime, truntime, op_settings):
 
     nEX = EX_hil_store.shape[1]
 
