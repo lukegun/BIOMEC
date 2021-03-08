@@ -10,7 +10,7 @@ Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applie
 
 BIOMEC uses [PINTS](https://github.com/pints-team/pints) for univariant Bayesian inference.
 
-For information of current uses see LIT REVIEW PAPER
+For information of current uses see [original Bayesian inference paper](https://doi.org/10.1002/celc.201700678) or our most recent [featured article](https://doi.org/10.1039/D0CC07549C) 
 
 ## Installing BIOMEC image
 The code is run in a singularity container which works for Unbuntu/UNIX and MAC (untested) OS systems.
