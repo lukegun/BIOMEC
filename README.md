@@ -55,7 +55,7 @@ Please, cite [Paper title FIX]() if you have used this package in a publication,
 
 ## License
 
-BIOMEC analysis/python code is open source under GPL-3.0 License, with MECSim developed by Gareth Kennedy and contaned in the mecsim.cpython-37m-x86_64-linux-gnu.so is Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+BIOMEC analysis/python code is open source under the GPL-3.0 License, with MECSim developed by Gareth Kennedy and contaned in the mecsim.cpython-37m-x86_64-linux-gnu.so shared object is under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
 ## Get in touch
 For Questions/Bugs Email me at luke.gundry1@monash.edu.
