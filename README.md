@@ -51,7 +51,7 @@ PDF tutorial or youtube videos to come.
  - Number of data poins in experimental data must be a multiple of two.
 
 ## Citing
-Please, cite [Paper title FIX]() if you have used this package in a publication, which will be updated once the paper is published.
+Please, cite [Soon to be published paper]() if you have used this package in a publication, which will be updated once the paper is published.
 
 ## License
 
