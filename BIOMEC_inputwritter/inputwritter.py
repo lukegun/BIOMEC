@@ -31,7 +31,7 @@ while not correctinput:
         
 correctinput = False
 while not correctinput:
-    print("List of logic methods:\nHarmPerFit\nBaye_HarmPerFit\nBayes_ExpHarmPerFit\nTCDS\nFTC\nLog10FTC ")
+    print("List of logic methods:\nHarmPerFit\nBayes_ExpHarmPerFit\nTCDS\nFTC\nLog10FTC ")
     logicm = str(input("Please input logic method : "))
     if logicm == "HarmPerFit" or  logicm == "Baye_HarmPerFit"  or logicm == "Bayes_ExpHarmPerFit" or logicm == "TCDS" or logicm == "Log10FTC" or logicm == "FTC":
         correctinput = True

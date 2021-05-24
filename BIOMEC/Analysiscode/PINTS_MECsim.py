@@ -18,6 +18,7 @@ import CMA_modules as CMAmod
 import MCMC_modules as MCMCmod
 import timeseries_modules as tpseries
 import Script_generator as Scripgen
+import window_func as Wint
 import plotting_scripts as plotter
 import numpy as np
 import pints
@@ -35,6 +36,7 @@ outputfname = input_name.split('.')[0] +'_output_'+str(datetime.date.today())
 # genertes the output file checking if a previous one exists
 outputfname = Scripgen.outputfilegenertor(outputfname)
 
+
 shutil.copy(input_name,outputfname)
 
 # Collects input data
@@ -44,18 +46,22 @@ settings, data, Exp_data = Scripgen.globalinreader(input_name)  # Takes the inpu
 Expnumber = len(Exp_data)
 
 # changes CMA_settings to usable data
-header, var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime = tpseries.PINTS_Varibles(settings)
-
-#bandwidth adjustments to standardize the bandwidth notation
-for i in range(1,bandwidth.shape[0]):
-    bandwidth[i][:] = bandwidth[i][:]/2
+header, var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime, Harmonicwindowing = tpseries.PINTS_Varibles(settings)
 
 spaces = Scripgen.data_finder(data)
 
 AC_freq, AC_amp = MLsp.AC_info(data, spaces)
 
+#bandwidth adjustments to standardize the bandwidth notation
+if Harmonicwindowing[0] == "squarewindow":
+    # this is to meet standard notation of badwidth = whole range around frequency harmonic therefore square window uses half
+    # This error has been corrected for other window functions
+    for i in range(1,bandwidth.shape[0]):
+        bandwidth[i][:] = bandwidth[i][:]/2
+
+
 # note that for NORMHARM Excurr is the set of harmonics Decimates the experimental result
-Excurr, Exp_t,Extime,sigma = tpseries.Exp_data_spliter(Exp_data, datatype, AC_freq, bandwidth,spaces,header,op_settings)  # splits the experimental input depending on input tyharm_weights = Scripgen.harm_weights_trans(harm_weights)  # reshapes harm_inputs into row
+Excurr, Exp_t,Extime,sigma = tpseries.Exp_data_spliter(Exp_data, datatype, AC_freq, bandwidth,spaces,header,op_settings,Harmonicwindowing)  # splits the experimental input depending on input tyharm_weights = Scripgen.harm_weights_trans(harm_weights)  # reshapes harm_inputs into row
 
 harm_weights = Scripgen.harm_weights_trans(harm_weights)
 
@@ -66,6 +72,11 @@ if DCAC_method[0] == 1 and (header[1] == 'HarmPerFit' or header[1] == 'HEPWsigma
     # Excurr truncates and sets up time truncation and time
 
     Excurr, sigma, Nsimdeci, Nex = MLsp.EXPharmtreatment(Excurr,sigma,Extime, truntime, op_settings)
+
+    if Harmonicwindowing[0] == "Conv_guassian": # This is to generate the simulation windowing for ease
+        filters = Wint.RGguassconv_filters(2**int(data.iloc[6]),bandwidth,Extime/2**int(data.iloc[6]),AC_freq,Harmonicwindowing[1])
+    else:
+        filters = None
 
     # Excurr is carried over harmstore set up previous function
 elif header[1] == 'TCDS':
@@ -102,7 +113,8 @@ if header[1] == 'HarmPerFit':  # AC method
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': Excurr,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'harm_weights': harm_weights,'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq':AC_freq}
+                   'harm_weights': harm_weights,'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq':AC_freq,
+                   'filters':filters}
 
         # Results are the best fit and logtot are all trails tried
         results, logtot = standCMA.STAND_CMAES_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
@@ -129,8 +141,9 @@ if header[1] == 'HarmPerFit':  # AC method
         print('This method and logic is currently not developed yet')
 
 elif header[1] == 'Baye_HarmPerFit':  # AC method
-
-    # correction to the truncated harmonics of sigma
+    print("Method depreciated due to incorrect noise model")
+    exit()
+    """# correction to the truncated harmonics of sigma
     sigma = tpseries.Harm_sigma_normal(Excurr,sigma,Expnumber)
 
     if header[2] == 'CMAES':  # CMA-ES for current total comparison
@@ -216,11 +229,11 @@ elif header[1] == 'Baye_HarmPerFit':  # AC method
 
         # something to print output text
         standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
-                                               colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
+                                               colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)"""
 
 elif header[1] == 'Bayes_ExpHarmPerFit':  # AC method
 
-    EXPperrErr, sigma, EXPperrmean = tpseries.Harm_sigma_percentge(Exp_data, Excurr, truntime, AC_freq, bandwidth, spaces,  op_settings)
+    EXPperrErr, sigma, EXPperrmean = tpseries.Harm_sigma_percentge(Exp_data, Excurr, truntime, AC_freq, bandwidth, spaces,  op_settings,Harmonicwindowing)
 
     # correction to the truncated harmonics of sigma
     #sigma = tpseries.Harm_sigma_normal(Excurr,sigma,Expnumber)
@@ -233,7 +246,7 @@ elif header[1] == 'Bayes_ExpHarmPerFit':  # AC method
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
                    'harm_weights': harm_weights,'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq':AC_freq,
-                   "EXPperrErr":EXPperrErr}
+                   "EXPperrErr":EXPperrErr, 'filters':filters}
 
         # Results are the best fit and logtot are all trails tried
         results, logtot = standCMA.STAND_CMAES_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
@@ -263,7 +276,8 @@ elif header[1] == 'Bayes_ExpHarmPerFit':  # AC method
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights,"EXPperrErr":EXPperrErr}
+                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights,
+                   "EXPperrErr":EXPperrErr, 'filters':filters}
 
         # Results are the best fit and logtot are all trails tried
         Mchains, Mrate, MErr, Mharmperfit = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
@@ -349,7 +363,7 @@ elif header[1] == 'TCDS':  # PINTS (yt-Isim)**2 for total current
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': Excurr,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq,'harm_weights':harm_weights,}
+                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq,'harm_weights':harm_weights}
 
         # chains are just the log tot Chains is an array of arrays
 
@@ -491,7 +505,7 @@ elif header[1] == 'Log10FTC':  # PINTS (yt-Isim)**2 for fourier transform of the
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': EX_hil_store,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,'Extime':Extime,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq,'harm_weights':harm_weights,}
+                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq,'harm_weights':harm_weights}
 
         # chains are just the log tot Chains is an array of arrays
 
@@ -526,7 +540,7 @@ elif header[1] == 'HEPWsigma':
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': Excurr,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'bandwidth': bandwidth,'Exsigma':sigma,'AC_freq':AC_freq,'harm_weights':harm_weights}
+                   'bandwidth': bandwidth,'Exsigma':sigma,'AC_freq':AC_freq,'harm_weights':harm_weights, 'filters':filters}
 
         # Results are the best fit and logtot are all trails tried
         results, logtot = standCMA.STAND_CMAES_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
@@ -555,7 +569,7 @@ elif header[1] == 'HEPWsigma':
         MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method,
                    'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
                    'cap_series': cap_series, 'op_settings': op_settings, 'Nsimdeci': Nsimdeci,
-                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights}
+                   'bandwidth': bandwidth, 'Exsigma': sigma, 'AC_freq': AC_freq, 'harm_weights': harm_weights, 'filters':filters}
 
         # Results are the best fit and logtot are all trails tried
         Mchains, Mrate, MErr,Mharmperfit = standADMCMC.STAND_ADMCMC_TOTCURR(var, op_settings, header[1], MEC_set, Excurr)
@@ -610,13 +624,13 @@ x = header[1] # holds this so that the method can go through and only get the 1s
 # extracts total current
 header[1] = 'TCDS'
 Extotcurr, Exp_t, Extime, sigma = tpseries.Exp_data_spliter(Exp_data, datatype, AC_freq, bandwidth, spaces, header,
-                                                             op_settings)  # splits the experimental input depending on input
+                                                             op_settings,Harmonicwindowing)  # splits the experimental input depending on input
 
 # extravt harmonics
 if AC_amp != 0:
     header[1] = 'HarmPerFit'
     Exharmcurr, Exp_t, Extime, sigma = tpseries.Exp_data_spliter(Exp_data, datatype, AC_freq, bandwidth, spaces,
-                                                                    header, op_settings)  # splits the experimental input depending on input
+                                                                    header, op_settings,Harmonicwindowing)  # splits the experimental input depending on input
 
 header[1] = x
 

@@ -1,5 +1,5 @@
 !Settings   (value,min,max,log sensitivity, parameter code, repeat line)
-STANDARD Baye_HarmPerFit CMAES 	 	 	! Header declaration (tot Logic Method)
+STANDARD HarmPerFit CMAES 	 	 	! Header declaration (tot Logic Method)
 5	! Number of varibles
 6.5e-06,5.0e-06, 8.0e-6,0,22,1
 8.00e-01, 0.790e0, 0.810e0, 0,33, 1
@@ -9,10 +9,11 @@ STANDARD Baye_HarmPerFit CMAES 	 	 	! Header declaration (tot Logic Method)
 1		! number of scaled varibles
 1.0,1,22,2		! scaling reletive varibles (scaling factor, varible number, parameter code, repeat line)
 0					! Number of functional scaling
+1, 0.1					! windowing function (Zero for square, 1 for CG windowing;std = 0.1 Hz recomended) 
 5.5,0,0,0,0,0,0,0	! Bandwidth Fundimental (BANDWIDTH FIRST)
-4,4,4,4,4,4,4,4	! Harmonic Bandwidth REPEAT (lowest freq to highest)
-0,0,0,0,0,0,0,0	! Fundimental wieghts
-0,0,0,0,1,1,1,1 ! Harmonic Wieghts REPEAT (lowest freq to highest)
+6,6,6,6,6,6,6,6	! Harmonic Bandwidth REPEAT (lowest freq to highest)
+1,0,0,0,0,0,0,0	! Fundimental wieghts
+1,1,1,1,1,1,1,1 ! Harmonic Wieghts REPEAT (lowest freq to highest)
 2,12			! Truncation points (sec) (0,MAX; for not applicable)
 1		! Fitting method used  (0 = absdiff, 1 = %diff)			THIS CAN BE PHASED OUT
 1		! Experimental input type (0 = MECSim, 1 = FTACV, 2=CHI)
@@ -72,9 +73,5 @@ MECSim settings   ! DO NOT REMOVE THESE SEPERATORS
 0, 1, -1, 1.0e0, 1.0e0,8.00e-01,0.2,0.55
 
 Experimental settings ! {NameEX.txt} Repet for triplicates effects method Important do not remove this line
-CommercalBDD/Data/81Hz/ACGC9.txt
-CommercalBDD/Data/81Hz/ACGC12.txt
-CommercalBDD/Data/81Hz/ACGC15.txt
-CommercalBDD/Data/81Hz/ACGC17.txt
-CommercalBDD/Data/81Hz/ACGC19M.txt
+test.txt
 

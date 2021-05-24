@@ -1,5 +1,5 @@
 !Settings   (value,min,max,log sensitivity, parameter code, repeat line)
-STANDARD Baye_HarmPerFit ADMCMC 	 	 	! Header declaration (tot Logic Method)
+STANDARD Bayes_ExpHarmPerFit ADMCMC 	 	 	! Header declaration (tot Logic Method)
 5	! Number of varibles
 3.711036e-06, 1.0e-06, 6.5e-6,0,22,1
 8.357092e+01, 83, 85.2, 0, 42, 2
@@ -14,8 +14,9 @@ STANDARD Baye_HarmPerFit ADMCMC 	 	 	! Header declaration (tot Logic Method)
 2					! Number of functional scaling
 1,2,0,10e+8	! functional parameter (function, varible number, paired value scalar, {paired value, varible row})
 1,3,0,10e+8	! functional parameter (function, varible number, paired value scalar, {paired value, varible row})
+0					! windowing function (Zero for square, 1 for CG windowing;std = 0.1 Hz recomended)
 5.5,0,0,0,0,0	! Bandwidth Fundimental (BANDWIDTH FIRST)
-4,4,4,4,4,4	! Harmonic Bandwidth REPEAT (lowest freq to highest)
+6,6,6,6,6,6	! Harmonic Bandwidth REPEAT (lowest freq to highest)
 0,0,0,0,0,0	! Fundimental wieghts
 1,1,1,1,1,1	! Harmonic Wieghts REPEAT (lowest freq to highest)
 1,12.5			! Truncation points (sec) (0,MAX; for not applicable)

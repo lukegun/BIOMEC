@@ -75,10 +75,12 @@ class standard_ADMCMC_Model():
         # defines if method is a harmonic based method (needed to trac percentage error)
         if self.Method == 'HEPWsigma' or self.Method == 'Baye_HarmPerFit':
             self.EXSigma = kwargs.pop('Exsigma')
+            self.filters = kwargs.get('filters')
             self.Harmonicmethod = True
             self.harmfitstore = []
         elif self.Method == 'Bayes_ExpHarmPerFit':
             self.EXPperrErr = kwargs.pop("EXPperrErr")
+            self.filters = kwargs.get('filters')
             self.EXSigma = kwargs.pop('Exsigma')
             self.Harmonicmethod = True
             self.harmfitstore = []
@@ -309,7 +311,7 @@ def PINT_ADMCMC_TOTCURR_settings(settings):
     # Gets the scaling
     scalvarpre = settings[nvar + 2:nvar + 3 + nscal]  # gets the num of scaling to
 
-    nband = int((n - 10 - nvar - 3 - Nfunc - nscal) / 2)
+    nband = int((n - 10 - nvar - 4 - Nfunc - nscal) / 2)
 
     scalvar = [[int(scalvarpre.iloc[0][0])]]
     i = 0
@@ -338,7 +340,26 @@ def PINT_ADMCMC_TOTCURR_settings(settings):
 
             # Seperates the CMA input data
     var = settings[2:nvar + 2]
-    Nbarndersnatch = nvar + 4 + nscal + Nfunc  # counter cause im lazy
+
+    Nwinfunc = nvar + 4 + nscal + Nfunc  # counter cause im lazy
+    # extracts the harmonic windowing information
+    Harmonicwindowing = settings[Nwinfunc:Nwinfunc + 1]
+    Harmonicwindowing = Harmonicwindowing.iloc[0][0].split(',')
+    Harmonicwindowing = [float(array) for array in
+                         Harmonicwindowing]  # gets rid of \t and converts  all values to floats
+
+    filler = []
+    if Harmonicwindowing[0] == 0:  # This is for the case of square windowing
+        filler.append("squarewindow")
+    elif Harmonicwindowing[0] == 1:  # This is for the convolutional guassin function from paper ~ 2014 mash?
+        filler.append("Conv_guassian")
+        filler.append(Harmonicwindowing[1])  # guassian std for function
+    else:
+        print("WARNING INCORRECT WINDOWING FUNCTION USED, HOPEFULLY DOESN'T KILL ANYTHING")
+    Harmonicwindowing = filler
+
+    Nbarndersnatch = nvar + 5 + nscal + Nfunc  # counter cause im lazy
+
     bandwidth = settings[Nbarndersnatch:Nbarndersnatch + nband]
     harm_weights = settings[Nbarndersnatch + nband:Nbarndersnatch + 2 * nband]
 
@@ -350,7 +371,7 @@ def PINT_ADMCMC_TOTCURR_settings(settings):
     harm_weights = harm_weights.values
 
     # starts count for settings
-    Np = nvar + 2 * nband + nscal + 3 + Nfunc
+    Np = nvar + 2 * nband + nscal + 4 + Nfunc
 
     # truncation settings for time series analysis
     truntime = settings.iloc[Np + 1][0]
@@ -382,7 +403,7 @@ def PINT_ADMCMC_TOTCURR_settings(settings):
 
     op_settings[7] = int(settings.iloc[Np + 10][0])  # number of chain to run at once
 
-    return var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime
+    return var, Harmonicwindowing,bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime
 
 # standard class type for ADMCMC sampling of moduled MECSim
 def STAND_ADMCMC_TOTCURR(var, op_settings, Method, MEC_set, Excurr):
@@ -485,7 +506,8 @@ def PINT_ADMCMC_TOTCURR(op_settings, DCAC_method, MEC_set,  Excurr):
 
     # Create mcmc routine
     # mcmc = pints.AdaptiveCovarianceMCMC(x0, sigma0=None)
-    mcmc = pints.MCMCController(log_posterior, DCAC_method[2], x0,sigma0=covar, method=pints.AdaptiveCovarianceMCMC)
+    #As per recommendation changed to HaarioBardenetACMC method
+    mcmc = pints.MCMCController(log_posterior, DCAC_method[2], x0,sigma0=covar, method=pints.HaarioBardenetACMC)
 
     # Add stopping criterion
     mcmc.set_max_iterations(int(op_settings[4]/op_settings[7]))

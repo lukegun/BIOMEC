@@ -14,14 +14,34 @@ def optsettings(header):
     scalfunclist = scalarfuncvaribles(header,Npara,paralist)
     
     if header[1] == "TCDS":
+
+        harmfilter = ["0 ! windowing function (Zero for square, 1 for CG windowing;std = 0.1 Hz recomended)"]
         
         bDCside = " ! Bandwidth Fundimental (BANDWIDTH FIRST)"
-        wDCside = " ! Fundimental wieghts"
+        wDCside = " ! Fundimental weights"
         bharmside = " ! Harmonic Bandwidth REPEAT (lowest freq to highest)"
-        wharmside = " ! Harmonic Wieghts REPEAT (lowest freq to highest)"
+        wharmside = " ! Harmonic Weights REPEAT (lowest freq to highest)"
         
         harmsetting = ["1,0" + bDCside,"0,0" + bharmside,"1,0" + wDCside,"0,0" + wharmside]
     else:
+
+        derp = " ! windowing function (Zero for square, 1 for CG windowing;std = 0.1 Hz recomended)"
+        correct = True
+        print("Please input windowing function for harmonics\n0 = square window (Simple but more ringing)\n1 = Guassian Convolutional (Simple but more ringing)\n")
+        while correct:
+            logicm = int(input("Please input windowing function number : "))
+            if logicm == 0 or logicm == 1:
+                correct = False
+                if logicm == 1:
+                    fl = float(input("Please input guassian std (0.1 strongly recommended) : "))
+                    x = '%i, %.4f' %(logicm, fl)
+                else:
+                    x = str(logicm)
+            else:
+                print("incorrect input try again")
+
+        harmfilter = [x + derp]
+
         harmsetting = harmonichandler()
     
     # Takes in logic for frequency domain shit 
@@ -30,7 +50,7 @@ def optsettings(header):
     s = "%s %s %s ! Header declaration (tot Logic Method)" %(header[0],header[1], header[2])
     headertot = [s]
     
-    generaloutputs = headertot + paralist + scalfunclist + harmsetting + trunsettings
+    generaloutputs = headertot + paralist + scalfunclist + harmfilter + harmsetting + trunsettings
     
     return generaloutputs
 
@@ -118,7 +138,7 @@ def harmonichandler():
     Nharm = int(input("Please input number of harmonics present (excluding DC): "))
     
     DCband = float(input("Please input bandwidth of DC component: "))
-    DCwieght = float(input("Please input scalar wieght of DC component: "))
+    DCwieght = float(input("Please input scalar weight of DC component: "))
     
     
     # sets up for the DC somponent
@@ -141,7 +161,7 @@ def harmonichandler():
     
     for i in range(Nac):
         harmband = float(input("Please input bandwidth of fundimental harmonic: "))
-        harmwieght = float(input("Please input scalar wieght of fundimental harmonic: "))
+        harmwieght = float(input("Please input scalar weight of fundimental harmonic: "))
         
         harmbandhold = "%.2f" %harmband
         harmwieghthold = "%.2f" %harmwieght
@@ -149,7 +169,7 @@ def harmonichandler():
         correct_inp = False
         while not correct_inp:
         
-            same = int(input("Are the harmonic wieghts and bandwidths the same for all harmonics? (0 = No; 1 = Yes): "))
+            same = int(input("Are the harmonic weights and bandwidths the same for all harmonics? (0 = No; 1 = Yes): "))
             if same == 1:
                 for j in range(Nharm-1):
                     harmbandhold += ", %.2f" %harmband
@@ -160,7 +180,7 @@ def harmonichandler():
             elif same == 0:
                 for j in range(Nharm - 1):
                     hb = float(input("Please input bandwidth of the #%i harmonic: " %(j+1) ))
-                    hw = float(input("Please input scalar wieght of the #%i harmonic: " %(j+1)))
+                    hw = float(input("Please input scalar weight of the #%i harmonic: " %(j+1)))
                     
                     harmbandhold += ", %.2f" %hb
                     harmwieghthold += ", %.2f" %hw
@@ -174,9 +194,9 @@ def harmonichandler():
         
     #sets the side stings
     bDCside = " ! Bandwidth Fundimental (BANDWIDTH FIRST)"
-    wDCside = " ! Fundimental wieghts"
+    wDCside = " ! Fundimental weights"
     bharmside = " ! Harmonic Bandwidth REPEAT (lowest freq to highest)"
-    wharmside = " ! Harmonic Wieghts REPEAT (lowest freq to highest)"
+    wharmside = " ! Harmonic Weights REPEAT (lowest freq to highest)"
         
     # something to put this all in as an output
     # band first

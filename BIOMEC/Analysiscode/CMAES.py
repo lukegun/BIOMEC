@@ -36,6 +36,7 @@ class standard_CMAES_Model(object):
 
         if self.Method == 'HEPWsigma' or self.Method == 'Baye_HarmPerFit':
             self.EXSigma = kwargs.pop('Exsigma')
+            self.filters = kwargs.get('filters')
 
         elif self.Method == 'TCDS' or self.Method == 'FTC' or self.Method == 'Log10FTC':
             var = kwargs.get('var')
@@ -48,6 +49,7 @@ class standard_CMAES_Model(object):
         elif self.Method == 'Bayes_ExpHarmPerFit':
             self.EXPperrErr = kwargs.pop("EXPperrErr")
             self.EXSigma = kwargs.pop('Exsigma')
+            self.filters = kwargs.get('filters')
 
 
     def simulate(self, *args):
@@ -188,10 +190,26 @@ def STAND_CMAES_TOTCURR_settings(settings,header):
             i += 1
 
     Nlist = 7
-    nband = int((n - Nlist - nvar - 3 - nscal - Nfunc) / 2)  # counts the number that isn't there
+    nband = int((n - Nlist - nvar - 4 - nscal - Nfunc) / 2)  # counts the number that isn't there
+    Nwinfunc = nvar + 1 + 2 + nscal + Nfunc + 1  # counter cause im lazy
+
+    # extracts the harmonic windowing information
+    Harmonicwindowing = settings[Nwinfunc:Nwinfunc+1]
+    Harmonicwindowing = Harmonicwindowing.iloc[0][0].split(',')
+    Harmonicwindowing = [float(array) for array in Harmonicwindowing] # gets rid of \t and converts  all values to floats
+
+    filler = []
+    if Harmonicwindowing[0] == 0: # This is for the case of square windowing
+        filler.append("squarewindow")
+    elif Harmonicwindowing[0] == 1: # This is for the convolutional guassin function from paper ~ 2014 mash?
+        filler.append("Conv_guassian")
+        filler.append(Harmonicwindowing[1]) # guassian std for function
+    else:
+        print("WARNING INCORRECT WINDOWING FUNCTION USED, HOPEFULLY DOESN'T KILL ANYTHING")
+    Harmonicwindowing = filler
 
     # Seperates the CMA input data
-    Nbarndersnatch = nvar + 1 + 2 + nscal + Nfunc + 1  # counter cause im lazy
+    Nbarndersnatch = nvar + 1 + 2 + nscal + Nfunc + 2  # counter cause im lazy
     bandwidth = settings[Nbarndersnatch:Nbarndersnatch + nband]
     harm_weights = settings[Nbarndersnatch + nband:Nbarndersnatch + 2 * nband]
 
@@ -223,7 +241,7 @@ def STAND_CMAES_TOTCURR_settings(settings,header):
     op_settings[3] = float(settings.iloc[Np + 6][0])  # sets the tolx value
     op_settings[4] = float(settings.iloc[Np + 7][0])  # sets the initial sigma
 
-    return var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime
+    return var, Harmonicwindowing, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime
 
 # STAND CMA-ES TOTCURR Runner
 def STAND_CMAES_TOTCURR(var, op_settings, Method,MEC_set, Excurr):
