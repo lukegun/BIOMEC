@@ -13,7 +13,7 @@ BIOMEC uses [PINTS](https://github.com/pints-team/pints) for univariant Bayesian
 For information of current uses see the original [BIOMEC paper](https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/celc.202100391), the [original Bayesian inference paper](https://doi.org/10.1002/celc.201700678) for AC voltammetry or our most recent [featured article](https://doi.org/10.1039/D0CC07549C).
 
 ## Installing BIOMEC image
-The code is run in a singularity container which works for Unbuntu/UNIX and MAC (untested) OS systems.
+The code is run in a singularity container which works for Ubuntu/UNIX and MAC (untested) OS systems.
 Singularity will need to be installed to use the image. Where the guide is seen in the following [website](https://sylabs.io/guides/3.6/user-guide/quick_start.html) or downloaded from connected singularity hub.
 
 Once singularity has been installed, download the BIOMEC file and run the code to create the BIOMEC container (which should be around 580MB). 
