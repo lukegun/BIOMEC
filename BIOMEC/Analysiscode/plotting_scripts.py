@@ -197,8 +197,7 @@ def density_plotter(filename, df,var_all,burnin):
 
             plt.figure()
 
-            ax1 = sns.distplot(df[:, i], kde=False,
-                               hist_kws={'weights': np.full(len(df[:, 0]), 1 / len(df[:, 0])), 'color': "blue"})
+            ax1 = sns.histplot(data = df[:, i], kde=False,stat = "density",bins=42,palette="pastel",**{"edgecolor":'none'})
             plt.axvline(me, color='k', linestyle='dashed', linewidth=1)
             plt.axvline(me + 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
             plt.axvline(me - 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
@@ -227,7 +226,7 @@ def density_plotter(filename, df,var_all,burnin):
 
                 # plot 2d hist
                 plt.figure()
-                ax2 = sns.kdeplot(df[:, i], df[:, j], cmap="Blues", n_levels=10, shade=True)
+                ax2 = sns.kdeplot(x=df[:, i], y=df[:, j], cmap="Blues", n_levels=10, shade=True)
                 plt.scatter(me, df[:, j].mean(), color='k', marker='x')
                 ax2.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
                 ax2.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
