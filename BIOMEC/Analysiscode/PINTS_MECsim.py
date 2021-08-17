@@ -695,8 +695,10 @@ with MLsp.cd(outputfname):
         else:           # plot for a singular convergence
             plotter.sinularconverg('Convergenceplots',dist,variblenames)
 
-        pass
-
-
+    elif header[2] == 'CMAES':
+        # gets the variable names
+        os.makedirs('Convergenceplots')
+        variblenames = plotter.name_Allo(space_holder)	
+        plotter.sinularconverg('Convergenceplots',logtot,variblenames)
 
     print('Calculation complete')
