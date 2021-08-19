@@ -55,10 +55,10 @@ These are the currently supported parameters that can be treated as varibles in 
 | Backward Reaction rate | 32 |
 | Formal Potential | 33 |
 | Electron Transfer Rate | 34 |
-| $\alpha$ or $\lambda$ | 35 |
+| α or λ | 35 |
 | Equilibrium Constant magnitude (func) | 41 |
-| Equilibrium Constant $\theta$ (func) | 42 |
-| Capacitance constants $C_0$-$C_4$ | 51-55 |
+| Equilibrium Constant θ (func) | 42 |
+| Capacitance constants C<sup>0</sup>-C<sup>4</sup> | 51-55 |
 | Capacitance Scalar Multiple | 56 |
 
 For parameters that occur on repeatable lines in the MECSim input file, change the number after the parameter code from 1 to what repeat line the parameter of interest is on.
