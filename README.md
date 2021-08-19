@@ -8,8 +8,6 @@ monash electrochemistry group with the assistance of Assosiate Professor Jie Zha
 It is an automatic plaform for parameterisation that uses mathmatical optimisation and Bayesian Inference to calculate parameters involved in the electrochemical simulation.
 Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applied in the PAPER. BIOMEC allows for automated parameterisation of DC and FTAC voltammetery, allowing highly dimensional fits of the posteriour distrabution.
 
-For an in depth tutorial on installation, application and analysis of BIOMEC and its outputs watch the four part series on [Youtube](https://www.youtube.com/watch?v=LjVesAtftog&list=PLqz7aW7nxQkpNyWkI8JXK4NhhEOlgs2h-).
-
 BIOMEC uses [PINTS](https://github.com/pints-team/pints) for univariant Bayesian inference.
 
 For information of current uses see the original [BIOMEC paper](https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/celc.202100391), the [original Bayesian inference paper](https://doi.org/10.1002/celc.201700678) for AC voltammetry or our most recent [featured article](https://doi.org/10.1039/D0CC07549C).
@@ -64,7 +62,7 @@ These are the currently supported parameters that can be treated as varibles in 
 For parameters that occur on repeatable lines in the MECSim input file, change the number after the parameter code from 1 to what repeat line the parameter of interest is on.
 
 ## Running BIOMEC
-PDF tutorial or youtube videos to come.
+For an in depth tutorial on installation, application and analysis of BIOMEC and its outputs watch the four part series on [Youtube](https://www.youtube.com/watch?v=LjVesAtftog&list=PLqz7aW7nxQkpNyWkI8JXK4NhhEOlgs2h-).
 
 
 ## Supporting Code
