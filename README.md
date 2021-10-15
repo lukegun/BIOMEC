@@ -27,6 +27,11 @@ Once the image is built the imput file (input.txt) can be passed to the image by
 ```
 $ ./BIOMEC.simg input.txt
 ```
+or 
+```
+$ singularity run BIOMEC.simg input.txt
+```
+
 This will generate and ouput file with plots and results once completed.
 
 ## Generating input files
