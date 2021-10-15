@@ -3,7 +3,7 @@
 
 # BIOMEC
 Bayesian Inference and Optimisation for the Monash electrochemical Simulator (MECSim) is the application developed by the
-monash electrochemistry group with the assistance of Assosiate Professor Jie Zhang, Emeratious Professor Alan Bond and technical assistance from Gareth Kennedy And Martin Robinson.
+monash electrochemistry group with the assistance of Assosiate Professor Jie Zhang, Emeratious Professor Alan Bond and technical assistance from Dr Gareth Kennedy And Dr Martin Robinson.
 
 It is an automatic plaform for parameterisation that uses mathmatical optimisation and Bayesian Inference to calculate parameters involved in the electrochemical simulation.
 Built around [MECSim](http://www.garethkennedy.net/MECSim.html) and first applied in the PAPER. BIOMEC allows for automated parameterisation of DC and FTAC voltammetery, allowing highly dimensional fits of the posteriour distrabution.
