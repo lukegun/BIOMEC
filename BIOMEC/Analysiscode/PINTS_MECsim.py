@@ -104,6 +104,11 @@ cap_series = tpseries.capacatance0(data,spaces,var)  # extracts the input capaci
 funcvar_holder = MLsp.functionholder(var)  # issolates the functional parameters
 phi0 = var.iloc[:][0].values # extracts starting points
 
+if datatype == 2: #adjusment for time series comparison to
+    dt_exp = Exp_t[1] # time interval
+    op_settings[2] = len(Exp_t)
+
+
 if header[1] == 'HarmPerFit':  # AC method
 
     if header[2] == 'CMAES':  # CMA-ES for current total comparison
@@ -651,8 +656,11 @@ with MLsp.cd(outputfname):
 
     # plots and saves output from mecsim
     MECheader = Scripgen.MECoutsetter(data, AC_freq, [AC_amp])
-    Scripgen.outputwriter('MEC_Sim_output_bfit', MECheader, Simvoltage, Scurr, Simtimearray)
+    if datatype != 2:
+        Scripgen.outputwriter('MEC_Sim_output_bfit', MECheader, Simvoltage, Scurr, Simtimearray)
 
+    print("fuck me")
+    print(Extime)
 
     # plot the total current
     #Scurr, Nsimdeci, Nex = MLsp.EXPtotcurrtreatment(Scurr, Extime, truntime, op_settings)

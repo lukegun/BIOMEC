@@ -694,6 +694,7 @@ def outputwriter(filename,startpart,voltage,Scurr,timev):
 
     f = open(name, 'w')
     f.write(startpart)
+
     for i in range(len(Scurr)):
         s = format_e_out(voltage[i]) + '   ' + format_e_out(Scurr[i]) + '   ' \
             + format_e_out(timev[i]) + '\n'

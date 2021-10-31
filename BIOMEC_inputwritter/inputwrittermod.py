@@ -246,7 +246,8 @@ def timetrun(logic):
     trunsettings.append(s)
     
     # Experimental input type
-    s = "1\t\t\t! Experimental input type (0 = MECSim, 1 = FTACV, 2=CHI)"
+    Ncore = int(input("Please input Experimental input type as number where (0 = MECSim, 1 = FTACV, 2=CHI): "))
+    s = "%i\t\t\t! Experimental input type (0 = MECSim, 1 = FTACV, 2=CHI)" %Ncore
     trunsettings.append(s)
     
     return trunsettings
