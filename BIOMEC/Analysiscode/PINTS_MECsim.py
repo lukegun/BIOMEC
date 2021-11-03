@@ -658,8 +658,6 @@ with MLsp.cd(outputfname):
     MECheader = Scripgen.MECoutsetter(data, AC_freq, [AC_amp])
     if datatype != 2:
         Scripgen.outputwriter('MEC_Sim_output_bfit', MECheader, Simvoltage, Scurr, Simtimearray)
-
-    print("fuck me")
     print(Extime)
 
     # plot the total current
