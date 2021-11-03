@@ -658,17 +658,18 @@ with MLsp.cd(outputfname):
     MECheader = Scripgen.MECoutsetter(data, AC_freq, [AC_amp])
     if datatype != 2:
         Scripgen.outputwriter('MEC_Sim_output_bfit', MECheader, Simvoltage, Scurr, Simtimearray)
-    print(Extime)
 
     # plot the total current
     #Scurr, Nsimdeci, Nex = MLsp.EXPtotcurrtreatment(Scurr, Extime, truntime, op_settings)
     plt.figure()
-    plt.plot(Exptimearray, Extotcurr)
+    plt.plot(Exptimearray, Extotcurr,label='Experimental')
     Ndeci = int(len(Scurr) / op_settings[2])
-    plt.plot(Simtimearray, Scurr)
+    plt.plot(Simtimearray, Scurr,label='Simulated')
+    plt.legend()
     plt.xlabel('Time (sec)')
     plt.ylabel('Current (A)')
     plt.savefig('totcurrent.png')
+
     plt.close()
 
     #calculates  the current output
