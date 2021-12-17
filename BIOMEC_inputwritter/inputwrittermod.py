@@ -78,7 +78,8 @@ def paraopt(header,Npara):
             
         if header[2] == "CMAES":
             logs = int(input("is this parameter optimised in a log scale (yes = 1 or no = 0): "))
-        logs = 0
+        else:
+            logs = 0
         correctinput = False
         while not correctinput:
             xmed = float(input("Please input median parameter value: "))
