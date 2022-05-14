@@ -80,7 +80,7 @@ PDF tutorial may be written up later.
 
 ## Known Issues
  - Custom waveforms have not been tested and Estart and End cannot equal zero.
- - Number of data poins in experimental data must be a multiple of two.
+ - AC harmonic based methods require the experimental data to contain a multiple of two data points.
 
 ## Citing
 Please, cite the original [BIOMEC paper](https://chemistry-europe.onlinelibrary.wiley.com/doi/abs/10.1002/celc.202100391) if you have used this package in a publication.
