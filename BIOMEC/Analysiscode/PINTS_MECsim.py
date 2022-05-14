@@ -27,6 +27,10 @@ import matplotlib.pyplot as plt
 import CMAES as standCMA
 import ADMCMC as standADMCMC
 
+# This is here to allow python plots on supercomputer for some resson
+import matplotlib
+matplotlib.use('Agg')
+
 t1 = time.time()
 
 # Set up input and output

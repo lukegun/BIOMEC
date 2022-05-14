@@ -91,7 +91,7 @@ def harmplot(outputfname,Simcurr,Simtime,EX_hil_store,Exp_t,bandwidth,AC_freq,sp
         plt.ylabel('Current (Amps)')
         plt.xlabel('Time (sec)')
         plt.text(0.40, 0.95, textstr, transform=ax.transAxes, fontsize=14,
-                 verticalalignment='top', size=10, bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
+                 verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
         plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
         ax.legend(loc = 'upper right')
         s = '%s/Harmonic%i' % (outputfname, i)
@@ -231,7 +231,7 @@ def density_plotter(filename, df,var_all,burnin):
                 ax2.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
                 ax2.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
                 plt.text(0.05, 0.95, textstr, transform=ax2.transAxes, fontsize=font,
-                         verticalalignment='top', size=font, bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
+                         verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
                 plt.locator_params(axis='x', nbins=7)  # sets number of ticks
                 plt.locator_params(axis='y', nbins=7)  # sets number of ticks
                 plt.ylabel(name[j], fontdict={'size': font})
