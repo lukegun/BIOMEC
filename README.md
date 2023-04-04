@@ -18,21 +18,21 @@ For information of current uses see the original [BIOMEC paper](https://chemistr
 The code is run in a singularity container which works for Ubuntu/UNIX and MAC (untested) OS systems.
 Singularity will need to be installed to use the image. Where the guide is seen in the following [website](https://sylabs.io/guides/3.6/user-guide/quick_start.html) or downloaded from connected singularity hub.
 
-Once singularity has been installed, download the BIOMEC file and run the code to create the BIOMEC container (which should be around 580MB). 
+Once singularity has been installed, download the BIOMEC file and run the code to create the BIOMEC container (which should be around 580MB).
 
 ```
 $ sudo singularity build BIOMEC.simg Singularity.def
 ```
-Once the image is built the imput file (input.txt) can be passed to the image by using the following command.
+Once the image is built the input file (input.txt) can be passed to the image by using the following command.
 ```
 $ ./BIOMEC.simg input.txt
 ```
-or 
+or
 ```
 $ singularity run BIOMEC.simg input.txt
 ```
 
-This will generate and ouput file with plots and results once completed.
+This will generate and output file with plots and results once completed.
 
 ## Generating input files
 inputwritter.py can guide users unfamilaur with generating input files to create an input file for the BIOMEC container, this program is contained in the BIOMEC_inputwritter.
@@ -43,11 +43,11 @@ $ python3 inputwritter.py
 The output of this file will then be of the form <input.txt> though other names will work.
 It is important that a copy of the MECSim Master.inp file is present in the folder you run inputwritter.py as the MECSim input file is required for BIOMEC to run.
 
-Once comfortable with writting the input file it is recommended to use any text editor. 
+Once comfortable with writing the input file it is recommended to use any text editor.
 
 
 ## Currently Supported Optimizable Parameters
-These are the currently supported parameters that can be treated as varibles in BIOMEC for CMA-ES and Bayesian Inference calculations.
+These are the currently supported parameters that can be treated as variables in BIOMEC for CMA-ES and Bayesian Inference calculations.
 
 | Parameter  | Code # |
 | ------------- | ------------- |
@@ -71,12 +71,18 @@ For parameters that occur on repeatable lines in the MECSim input file, change t
 ## Running BIOMEC
 For an in depth tutorial on installation, application and analysis of BIOMEC and its outputs watch the four part series on [Youtube](https://www.youtube.com/watch?v=LjVesAtftog&list=PLqz7aW7nxQkpNyWkI8JXK4NhhEOlgs2h-).
 
+Though the singularity container is not supported on windows you can now run the source code on Windows or MAC OS systems. A further Docker container may be developed in future for containerisation on windows systems.
+
+The source code can be compiled using the following command in the terminal  (I recommend using singularity.def file to identify the python packages required).
+```
+$ python3 PINTS_MECsim.py input.txt
+```
 PDF tutorial may be written up later.
 
 
 ## Supporting Code
- - BIOMEC_inputwritter: Basic terminal/ .exe code for guiding uses in writting the input files for BIOMEC
- - MCMC PLOTTER: code to plot the mcmc output chains from the Iter_log.txt to images 
+ - BIOMEC_inputwritter: Basic terminal/ .exe code for guiding uses in writing the input files for BIOMEC
+ - MCMC PLOTTER: code to plot the MCMC output chains from the Iter_log.txt to images
 
 ## Known Issues
  - Custom waveforms have not been tested and Estart and End cannot equal zero.
@@ -90,4 +96,4 @@ Please, cite the original [BIOMEC paper](https://chemistry-europe.onlinelibrary.
 BIOMEC analysis/python code is open source under the GPL-3.0 License, with MECSim developed by Gareth Kennedy and contaned in the mecsim.cpython-37m-x86_64-linux-gnu.so shared object is under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
 ## Get in touch
-For Questions/Bugs Email me at luke.gundry1@monash.edu.
+For Questions/Bugs Email me at lukegundry@gmail.com.
