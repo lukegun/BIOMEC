@@ -71,12 +71,6 @@ For parameters that occur on repeatable lines in the MECSim input file, change t
 ## Running BIOMEC
 For an in depth tutorial on installation, application and analysis of BIOMEC and its outputs watch the four part series on [Youtube](https://www.youtube.com/watch?v=LjVesAtftog&list=PLqz7aW7nxQkpNyWkI8JXK4NhhEOlgs2h-).
 
-Though the singularity container is not supported on windows you can now run the source code on Windows or MAC OS systems. A further Docker container may be developed in future for containerisation on windows systems.
-
-The source code can be compiled using the following command in the terminal  (I recommend using singularity.def file to identify the python packages required).
-```
-$ python3 PINTS_MECsim.py input.txt
-```
 PDF tutorial may be written up later.
 
 
