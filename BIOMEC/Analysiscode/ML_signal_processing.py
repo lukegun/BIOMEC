@@ -256,9 +256,10 @@ def Iterative_MECSim(*args, **kwargs): # (data, var, val_in, spaces, DCAC_method
     
     """start module reader"""
     MECSettings,Numberin,Reacpara,reacMech,Capaci,Diffvalues,ACSignal,EModown,\
-        Currenttot, Error_Code = ModMec_form(data,spaces)
+        Currenttot, Error_Code,Ecustom,Tcustom = ModMec_form(data,spaces)
         
-    mecsim.mecsim_main(MECSettings,Numberin,Reacpara,reacMech,Capaci,Diffvalues,ACSignal,EModown,Currenttot, Error_Code)    # runs mecsim
+    mecsim.mecsim_main(MECSettings, Numberin, Reacpara, reacMech, Capaci, Diffvalues, ACSignal, EModown,Ecustom,Tcustom, Currenttot,
+                       Error_Code)    # runs mecsim
     
     Currenttot = Currenttot[0:int(Numberin[0]),]    # truncates the static varibles of Fortran77    
     """end module reader"""
@@ -379,11 +380,11 @@ def Iterative_MECSim_Curr(*args, **kwargs):  # (data, var, val_in, spaces, DCAC_
 
     """start module reader"""
     MECSettings, Numberin, Reacpara, reacMech, Capaci, Diffvalues, ACSignal, EModown, \
-    Currenttot, Error_Code = ModMec_form(data, spaces)
+    Currenttot, Error_Code,Ecustom,Tcustom = ModMec_form(data, spaces)
     t1 = time.time()
 
     try:
-        mecsim.mecsim_main(MECSettings, Numberin, Reacpara, reacMech, Capaci, Diffvalues, ACSignal, EModown, Currenttot,
+        mecsim.mecsim_main(MECSettings, Numberin, Reacpara, reacMech, Capaci, Diffvalues, ACSignal, EModown,Ecustom,Tcustom, Currenttot,
                        Error_Code)  # runs mecsim
     except:
         print("MECSim iteration obvioulsy failed in some way")
@@ -456,7 +457,7 @@ def MECsim_noisepararemover(fit,var):
     return x
 
 #extracts data from Mecsim file  (data is a pandas dataframe)
-def input_sep(data, spaces):
+def input_sep(data, spaces,nstoremax = 10000000):
     
     # predefine input arrays
     #Numberin = [2**datapoints, NEVramp + 2, ACsource, Nspecies, NCap+1, Nreactions]
@@ -571,33 +572,45 @@ def input_sep(data, spaces):
     Diffvaluespre = [[Conc1,Diff1,surf1],[Conc2,Diff2,surf2],[Conc3,Diff3,surf3]]
     ACSignalpre = [[A1, freq1],[A2, freq2]]
     EModownpre = [AdEst, AdEend, E_rev1, E_rev2]"""
-    
-    return MECSettings,Numberin,PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown
+
+    # set up some placeholder customm values
+    # Empty BUT ADJUST TO FIT THE NUMBER OF CUSTOM values
+    #MECSettings[18] = 0 # sets the output type to take the below values in  2 for custom
+
+    # preallocate the functions for custom time and potential values
+    # likely this will be needed to loaded in from a settings files in future
+    Ecustom = np.zeros(nstoremax)
+    Tcustom = np.zeros(nstoremax)
+   
+    return MECSettings,Numberin,PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown,Ecustom,Tcustom
  
 #something to load MASTER.file (data is a pandas dataframe)
 def ModMec_form(data,spaces):
+
+    # this is for preallocating some lengths
+    nstoremax=10000000
     
     # extracts values from data 
-    MECSettings,Numberin,PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown \
-    = input_sep(data, spaces)
+    MECSettings,Numberin,PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown,Ecustom,Tcustom \
+    = input_sep(data, spaces,nstoremax)
     
     # turns values into 
     Reacpara,reacMech,Capaci,Diffvalues,ACSignal,EModown,Currenttot,\
      Error_Code = pre2post(PReacpara,PreacMech,\
-                                      PCapaci,PDiffvalues,PACSignal,PEModown)
-    
-    return MECSettings,Numberin,Reacpara,reacMech,Capaci,Diffvalues,ACSignal, EModown,Currenttot, Error_Code
+                                      PCapaci,PDiffvalues,PACSignal,PEModown,nstoremax)
+
+
+    return MECSettings,Numberin,Reacpara,reacMech,Capaci,Diffvalues,ACSignal, EModown,Currenttot, Error_Code, Ecustom,Tcustom
     
 
 
-def pre2post(PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown):
+def pre2post(PReacpara,PreacMech,PCapaci,PDiffvalues,PACSignal,PEModown,nstoremax=10000000):
     
     # Outputs
     Error_Code = 0
     
     # Inputs
     # header file
-    nstoremax=10000000
     
     nrmax=30
     nsigmax=30

@@ -30,6 +30,12 @@ import ADMCMC as standADMCMC
 # This is here to allow python plots on supercomputer for some resson
 import matplotlib
 
+import warnings
+
+# Suppress FutureWarning messages from pandas
+# I'll fix this adventually but its a day job so not right now
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 def main(args):
 
     matplotlib.use('Agg')
