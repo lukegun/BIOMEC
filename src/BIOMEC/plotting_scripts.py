@@ -94,7 +94,7 @@ def harmplot(outputfname,Simcurr,Simtime,EX_hil_store,Exp_t,bandwidth,AC_freq,sp
                  verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
         plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
         ax.legend(loc = 'upper right')
-        s = '%s/Harmonic%i' % (outputfname, i)
+        s = outputfname / f'Harmonic{i}.png'
         plt.savefig(s, bbox_inches='tight')
         plt.close()
 
@@ -186,65 +186,61 @@ def density_plotter(filename, df,var_all,burnin):
             pass
         i += 1
 
-    if True:
-        i = 0
-        plt.rc('xtick', labelsize=font)
-        plt.rc('ytick', labelsize=font)
-        for varibles in var_all:
 
-            # plot stuff 1D
-            me = df[:, i].mean()
+    plt.rc('xtick', labelsize=font)
+    plt.rc('ytick', labelsize=font)
+    for i in range(len(var_all)):
 
+        # plot stuff 1D
+        me = df[:, i].mean()
+
+        plt.figure()
+
+        ax1 = sns.histplot(data = df[:, i], kde=False,stat = "density",
+                            bins=42,**{"edgecolor":'none'})
+        plt.axvline(me, color='k', linestyle='dashed', linewidth=1)
+        plt.axvline(me + 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
+        plt.axvline(me - 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
+        ax1.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
+        ax1.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
+        plt.locator_params(axis='x', nbins=7)  # sets number of ticks
+        plt.ylabel('Probability Density', fontdict={'size': font})
+        plt.xlabel(name[i], fontdict={'size': font})
+
+        # Save as png
+        s = filename / f'histVar_{i}.png'
+        plt.savefig(s, bbox_inches='tight')
+        plt.close()
+
+        # plot 2D
+        for j in range(i + 1,len(var_all)):
+            # sets up the print varibles
+            cov = np.cov(df[:, i], df[:, j], ddof=1)
+            sig1 = np.sqrt(cov[0, 0])
+            sig2 = np.sqrt(cov[1, 1])
+            rho = cov[0, 1] / (sig1 * sig2)
+
+            textstr = '$\sigma_x$ = %s\n$\sigma_y$ = %s\n$\\rho_{xy}$ = %.3f' % (
+            Scripgen.format_e(sig1), Scripgen.format_e(sig2), rho)
+
+            # plot 2d hist
             plt.figure()
-
-            ax1 = sns.histplot(data = df[:, i], kde=False,stat = "density",bins=42,palette="pastel",**{"edgecolor":'none'})
-            plt.axvline(me, color='k', linestyle='dashed', linewidth=1)
-            plt.axvline(me + 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
-            plt.axvline(me - 2 * np.std(df[:, i], ddof=1), color='r', linestyle=':', linewidth=1)
-            ax1.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
-            ax1.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
+            ax2 = sns.kdeplot(x=df[:, i], y=df[:, j], cmap="Blues", n_levels=10, shade=True)
+            plt.scatter(me, df[:, j].mean(), color='k', marker='x')
+            ax2.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
+            ax2.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
+            plt.text(0.05, 0.95, textstr, transform=ax2.transAxes, fontsize=font,
+                        verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
             plt.locator_params(axis='x', nbins=7)  # sets number of ticks
-            plt.ylabel('Probability Density', fontdict={'size': font})
+            plt.locator_params(axis='y', nbins=7)  # sets number of ticks
+            plt.ylabel(name[j], fontdict={'size': font})
             plt.xlabel(name[i], fontdict={'size': font})
 
-            # Save as png
-            s = '%s/histVar_%i' % (filename, i)
-            plt.savefig(s, bbox_inches='tight')
+            s = filename / f'KDE_{i}-{j}.png'
+            plt.savefig(s, bbox_inches='tight')  # Saves the image
             plt.close()
-
-            # plot 2D
-            j = i + 1
-            while j != len(var_all):
-                # sets up the print varibles
-                cov = np.cov(df[:, i], df[:, j], ddof=1)
-                sig1 = np.sqrt(cov[0, 0])
-                sig2 = np.sqrt(cov[1, 1])
-                rho = cov[0, 1] / (sig1 * sig2)
-
-                textstr = '$\sigma_x$ = %s\n$\sigma_y$ = %s\n$\\rho_{xy}$ = %.3f' % (
-                Scripgen.format_e(sig1), Scripgen.format_e(sig2), rho)
-
-                # plot 2d hist
-                plt.figure()
-                ax2 = sns.kdeplot(x=df[:, i], y=df[:, j], cmap="Blues", n_levels=10, shade=True)
-                plt.scatter(me, df[:, j].mean(), color='k', marker='x')
-                ax2.ticklabel_format(axis='x', style='sci', scilimits=(-2, 2))
-                ax2.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
-                plt.text(0.05, 0.95, textstr, transform=ax2.transAxes, fontsize=font,
-                         verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5, boxstyle="square"))
-                plt.locator_params(axis='x', nbins=7)  # sets number of ticks
-                plt.locator_params(axis='y', nbins=7)  # sets number of ticks
-                plt.ylabel(name[j], fontdict={'size': font})
-                plt.xlabel(name[i], fontdict={'size': font})
-
-                s = '%s/KDE_%i-%i' % (filename, i, j)
-                plt.savefig(s, bbox_inches='tight')  # Saves the image
-                plt.close()
-                # save
-                j += 1
-
-            i += 1
-
+            # save
+     
     return name
 
 # singular convergence plotter
@@ -260,7 +256,7 @@ def sinularconverg(filename,dist,variblenames):
         plt.xlabel("Iterations")
         plt.ylabel(names)
         plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
-        s = filename + '/Var'+str(i)
+        s = filename / f'Var{i}.png'
         plt.savefig(s,bbox_inches='tight')
         plt.close()
         i += 1
@@ -271,8 +267,7 @@ def sinularconverg(filename,dist,variblenames):
 #multiple convegence plotter
 def multiconverg(filename, Mchains, variblenames):
 
-    i = 0
-    for names in variblenames:
+    for i, names in enumerate(variblenames):
         plt.figure()
         j = 0
         while j != len(Mchains):
@@ -284,10 +279,8 @@ def multiconverg(filename, Mchains, variblenames):
         plt.xlabel("Iterations")
         plt.ylabel(names)
         plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
-        s = filename + '/Var'+str(i)
+        s = filename / f'Var{i}.png'
         plt.savefig(s,bbox_inches='tight')
         plt.close()
-
-        i += 1
 
     return

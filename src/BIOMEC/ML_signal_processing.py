@@ -403,7 +403,7 @@ def Iterative_MECSim_Curr(*args, **kwargs):  # (data, var, val_in, spaces, DCAC_
     return Scurr
 
 
-def MECSiminpwriter(val_in, **kwargs):  # (data, var, val_in, spaces, DCAC_method, Exp_data,harm_weights):
+def MECSiminpwriter(filename, val_in, **kwargs):  # (data, var, val_in, spaces, DCAC_method, Exp_data,harm_weights):
 
     # Extracts the varibles
     data = kwargs.get('data')
@@ -442,7 +442,7 @@ def MECSiminpwriter(val_in, **kwargs):  # (data, var, val_in, spaces, DCAC_metho
 
         data = cap2data(val_in, var, spaces, data,cap_series[1])
 
-    MECSimwriter(data)
+    MECSimwriter(filename, data)
 
     return
 

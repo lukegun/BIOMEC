@@ -378,7 +378,6 @@ def PINT_CMAES_TOTCURR_output(filename,t2, space_holder, var_out, res, mean_var_
 
     # t2,space_holder, var_out,Perr,res,c
     # For AC the main difference is that Perr is a matrix
-
     f = open(filename, "w")  # creates a blank .inp to be written
 
     # writes the input

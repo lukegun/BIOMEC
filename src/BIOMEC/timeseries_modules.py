@@ -7,19 +7,16 @@ Date: 16/7/19
 
 """
 
-import cma
 import pandas as pd
 import numpy as np
 import pints
 from multiprocessing import Pool
 import ML_signal_processing as MLsp
 import window_func as Wint
-#Iterative_MECSim, Iterative_MECSim_Curr
-from Script_generator import iter_logger
 from MCMC_modules import *
-import matplotlib.pyplot as plt
-from scipy.fftpack import rfft, irfft, rfftfreq
+from scipy.fftpack import rfft
 from itertools import islice
+from pathlib import Path
 
 # all the functions within the system
 from CMAES import *
@@ -145,7 +142,8 @@ def PINTS_Varibles(settings):
         var, Harmonicwindowing, bandwidth, harm_weights, op_settings, datatype, \
         scalvar, funcvar, truntime = PINT_ADMCMC_TOTCURR_settings(settings)
     else:
-        print('incorrect Header parameters or method not avalable')
+        raise ValueError(f"""incorrect Header method parameters or method not
+                             avalable with value {header[2]}, needs to be CMAES OR ADMCMC""")
 
     return header, var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime, Harmonicwindowing   # Modified CMA VALUES var
 
@@ -163,23 +161,21 @@ def output_reader_FTMC(name):
 
 # splits exp data depending on data type
 def Exp_data_spliter(Exp_data, datatype,freq, bandwidth,spaces,header,op_settings,Harmonicwindowing):
-    exp = Exp_data.values   # converts to list
     curr_col = []
 
     if datatype == 0 or datatype == 1:  # MECsim/FTACV simulation data (of form {v,i,t})
         # extracts Exp file names
         i = 0
-        while i != len(Exp_data.iloc[:][0]):
+        while i != len(Exp_data):
 
-            curr, Exp_t,Extime = output_reader_FTMC(exp[i,0])
+            curr, Exp_t,Extime = output_reader_FTMC(Exp_data[i])
             curr_col.append(np.array(curr))
             i += 1
 
     elif datatype == 2:  # CHI data type (of form {v,i}) (NEED SMETHING TO get time)
-        #Exp_data = Exp_data[0].str.split(', ', expand=True).astype('float')
 
         # loads the first few lines of input file to memory
-        with open(exp[0,0], 'r') as file:
+        with open(Exp_data[0], 'r') as file:
             lines_gen = islice(file, 48)
             linesstore = []
             for lines in lines_gen:
@@ -197,8 +193,8 @@ def Exp_data_spliter(Exp_data, datatype,freq, bandwidth,spaces,header,op_setting
                 sampleintsec = sampleint/scanrate
 
                 i = 0
-                while i != len(Exp_data.iloc[:][0]):
-                    results = pd.read_csv(exp[i,0], sep= ",", skiprows=24, names=["v", "i"])
+                while i != len(Exp_data):
+                    results = pd.read_csv(Exp_data[0], sep= ",", skiprows=24, names=["v", "i"])
                     results = results.values  # changes results fro df object to np array
 
                     curr = results[:, 1]
@@ -211,8 +207,7 @@ def Exp_data_spliter(Exp_data, datatype,freq, bandwidth,spaces,header,op_setting
                     i += 1
 
         else:
-            print("ERROR: incorrect input file email file format to dev ")
-            exit()
+            raise ValueError(f"ERROR: incorrect input file email file format to dev ")
 
     else:
         print('need a data type to compair to')
@@ -222,7 +217,7 @@ def Exp_data_spliter(Exp_data, datatype,freq, bandwidth,spaces,header,op_setting
     deci = float(Np/op_settings[2])
 
     # exception for output reader
-    if len(Exp_data.iloc[:][0]) == 1:
+    if len(Exp_data) == 1:
         if header[1] == 'TCDS':
             curr = curr_col[0][::int(deci)]
             sigma = False
@@ -611,8 +606,6 @@ def CMA_var_handler(Iterative_MECSim0):  # AC is needed so args can be used in t
         val_out = []
         [val_out.append(s) for s in multi]  # CMA-ES output is a list of NP-arrays
 
-        # iter_logger(listin, out)  # append in loop then print to txt at c point redesign
-
         return val_out
     return CMA_Var
 
@@ -732,7 +725,7 @@ def Volt_Sigma(Curr,Exp_t, freq, bandwidth,spaces,deci,filters):
 def Harm_sigma_percentge(expfilenames,meanharmcurr,truntime,freq, bandwidth,spaces,op_settings,Harmonicwindowing):
 
     # converts list of files to a exp
-    expfilenames = expfilenames.values
+    expfilenames = expfilenames
     Ndata = len(expfilenames)
 
     Nharm = meanharmcurr.shape[0]
@@ -742,7 +735,7 @@ def Harm_sigma_percentge(expfilenames,meanharmcurr,truntime,freq, bandwidth,spac
     harmfile = []
     for filename in expfilenames:
 
-        curr, Exp_t, Extime = output_reader_FTMC(filename[0])
+        curr, Exp_t, Extime = output_reader_FTMC(filename)
         # gets harmonics
         if Harmonicwindowing[0] == "squarewindow":
             hil_store = MLsp.harm_gen(curr, Exp_t, freq, bandwidth, spaces)
