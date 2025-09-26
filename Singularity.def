@@ -13,7 +13,6 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
 # this stores key varibles
 %environment
-    export VENVPYTHONPATH=${SINGULARITY_ROOTFS}/venvs/venv/python3
     
 
 %runscript
@@ -37,7 +36,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 	
 	Licenses as per documentation
 	
-	Currenly set up to run on python 3.12 in unbuntu bionic working in a singulrity Version 3.1 container though higher should work
+	Currenly set up to run on python 3.12 in unbuntu noble working in a singulrity Version 3.1 container though higher should work
 
 %post
     
@@ -45,7 +44,6 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     apt-get -y update
     apt-get -y install build-essential git
     apt-get -y install gfortran
-    apt-get -y install python3.12
     apt-get -y install software-properties-common
 	apt-get -y install bc
     apt-add-repository  universe
@@ -54,7 +52,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     
     # create the virtual enviroment
     apt -y install python3-venv
-    python3 -m venv ${SINGULARITY_ROOTFS}/venvs/venv
+    python3.12 -m venv ${SINGULARITY_ROOTFS}/venvs/venv
 
     # install to the virtual enviroment
     ${SINGULARITY_ROOTFS}/venvs/venv/bin/pip install --upgrade pip

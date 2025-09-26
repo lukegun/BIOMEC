@@ -34,6 +34,12 @@ $ singularity run BIOMEC.simg input.txt
 
 This will generate and output file with plots and results once completed.
 
+If you want to run the BIOMEC main.py, you will need to install a python 3.12 virtual enviroment from the requirements file and run the following command to run the main.
+```
+$ python main.py input.txt
+```
+
+
 ## Generating input files
 inputwritter.py can guide users unfamilaur with generating input files to create an input file for the BIOMEC container, this program is contained in the BIOMEC_inputwritter.
 Simply run the file using the following command and follow the prompts and an input file will be generated.
