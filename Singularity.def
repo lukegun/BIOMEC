@@ -3,14 +3,21 @@ OSVersion: noble
 MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
 %setup
-    mkdir -p ${SINGULARITY_ROOTFS}/runcode  
-	cp -R src/BIOMEC/Analysiscode/. ${SINGULARITY_ROOTFS}/runcode/
+    mkdir -p ${SINGULARITY_ROOTFS}/runcode
+    mkdir -p ${SINGULARITY_ROOTFS}/venvs  
+	cp -R src/BIOMEC/. ${SINGULARITY_ROOTFS}/runcode/
+    cp requirements.txt ${SINGULARITY_ROOTFS}/venvs/requirements.txt
 
 %files
+
+
+# this stores key varibles
+%environment
+    export VENVPYTHONPATH=${SINGULARITY_ROOTFS}/venvs/venv/python3
     
 
 %runscript
-    
+
 	# var 1 = Input file
     if [ $# -ne 1 ];
 	then
@@ -19,7 +26,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     fi
 	
 	echo "running"
-	python3.10 ${SINGULARITY_ROOTFS}/runcode/PINTS_MECsim.py $1
+	${SINGULARITY_ROOTFS}/venvs/venv/bin/python ${SINGULARITY_ROOTFS}/runcode/main.py $1
     
 	echo "finished"
     
@@ -35,19 +42,23 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 %post
     
 	# install packages and python modules
-    apt-get -y --force-yes install vim
-    apt-get -y --force-yes update
-    apt-get -y --force-yes install build-essential git
-    apt-get -y --force-yes install gfortran
-    apt-get -y --force-yes install python3.12
-    apt-get -y --force-yes install software-properties-common
-	apt-get -y --force-yes install bc
+    apt-get -y update
+    apt-get -y install build-essential git
+    apt-get -y install gfortran
+    #apt-get -y install python3.12
+    apt-get -y install software-properties-common
+	apt-get -y install bc
     apt-add-repository  universe
     apt-get update
-    apt-get -y --force-yes install python3-pip python3.12-dev
-    python3.12 -m pip install --upgrade pip
-    python3.12 -m pip install pandas numpy scipy cma seaborn matplotlib
-	python3.12 -m pip install pints
+    apt-get -y install python3-pip python3.12-dev
+    
+    # create the virtual enviroment
+    apt -y install python3-venv
+    python3.12 -m venv ${SINGULARITY_ROOTFS}/venvs/venv
+
+    # install to the virtual enviroment
+    ${SINGULARITY_ROOTFS}/venvs/venv/bin/pip install --upgrade pip
+    ${SINGULARITY_ROOTFS}/venvs/venv/bin/pip install -r ${SINGULARITY_ROOTFS}/venvs/requirements.txt
 	
 	# change permissions of files
     chmod -R 777 ${SINGULARITY_ROOTFS}/runcode

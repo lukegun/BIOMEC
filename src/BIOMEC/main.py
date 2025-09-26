@@ -27,6 +27,9 @@ import matplotlib.pyplot as plt
 import CMAES as standCMA
 import ADMCMC as standADMCMC
 
+# this is for pathing
+from pathlib import Path
+
 # This is here to allow python plots on supercomputer for some resson
 import matplotlib
 
@@ -43,9 +46,9 @@ def main(args):
     t1 = time.time()
 
     # Set up input and output
-    input_name = args #sys.argv[1]
-    outputfname = input_name.split('.')[0] +'_output_'+str(datetime.date.today())
-
+    input_name = Path(args) #sys.argv[1]
+    outputfname = input_name.parent / f'{input_name.stem}_output_{datetime.date.today()}'
+    
     # genertes the output file checking if a previous one exists
     outputfname = Scripgen.outputfilegenertor(outputfname)
 
@@ -55,11 +58,12 @@ def main(args):
     # Collects input data
     settings, data, Exp_data = Scripgen.globalinreader(input_name)  # Takes the input data and seperates to its sections
 
-    #number of experimental inputs
-    Expnumber = len(Exp_data)
+    # modify the EXP_data to make the loading relative to the input file location if not root
+    Exp_data = Scripgen.EXP_conversion(Exp_data, input_name.parent)
 
     # changes CMA_settings to usable data
-    header, var, bandwidth, harm_weights, op_settings, datatype, scalvar, funcvar, truntime, Harmonicwindowing = tpseries.PINTS_Varibles(settings)
+    header, var, bandwidth, harm_weights, op_settings, \
+        datatype, scalvar, funcvar, truntime, Harmonicwindowing = tpseries.PINTS_Varibles(settings)
 
     spaces = Scripgen.data_finder(data)
 
@@ -140,7 +144,7 @@ def main(args):
             completion_time = (time.time() - t1) / 60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname / 'Iter_log.txt',logtot)
 
             DCAC_method[0] = 1  # sets up to use the Perr method
             MEC_set['DCAC_method'] = DCAC_method
@@ -152,7 +156,7 @@ def main(args):
             mean_var_out = CMAmod.CMA_meanval(results, var)
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname / 'result_file.txt',completion_time, space_holder, var_out,
                                                 results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
         elif header[2] == 'ADMCMC':  # CMA-ES for current total comparison
@@ -182,7 +186,7 @@ def main(args):
             completion_time = (time.time() - t1) / 60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname / 'Iter_log.txt',logtot)
 
             DCAC_method[0] = 1  # sets up to use the Perr method
             MEC_set['DCAC_method'] = DCAC_method
@@ -196,7 +200,7 @@ def main(args):
             #nned to fix this
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname / 'result_file.txt',completion_time, space_holder, var_out,
                                                results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
         elif header[2] == 'ADMCMC':  # CMA-ES for current total comparison
@@ -213,7 +217,7 @@ def main(args):
             completion_time = (time.time() - t1) / 60
 
             # creates the parameters output files
-            tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_log.txt', Mchains)  # prints the multi chain output
+            tpseries.MCMC_para_logger2(outputfname / 'MCMC_parallel_log.txt', Mchains)  # prints the multi chain output
 
             # combines and plots the multplie chains to one
             dist = []
@@ -228,12 +232,12 @@ def main(args):
                     harmperfit.append(Mharmperfit[j][i])
 
             # this is only for the harmonic fit
-            MCMCmod.MCMC_harmfit_logger(outputfname + '/' + 'MCMC_harmper_log.txt', harmperfit)
+            MCMCmod.MCMC_harmfit_logger(outputfname / 'MCMC_harmper_log.txt', harmperfit)
 
             dist = np.array(dist)
             Err = np.array(Err)
 
-            MCMCmod.MCMC_dist_logger(outputfname+'/'+'Iter_log.txt', dist, Err)  # saves the distrabution to a text file
+            MCMCmod.MCMC_dist_logger(outputfname / 'Iter_log.txt', dist, Err)  # saves the distrabution to a text file
 
             # something to calculate the covarence and statistic values
             MCMC_mean, colapsed_std, cal_covar, covar_std, corr_matrix = MCMCmod.covarinence_stat(dist, op_settings[5])
@@ -242,7 +246,7 @@ def main(args):
 
             # prints and calculates the series of R-gelman statistic
             if op_settings[7] != 1:
-                R_hat = MCMCmod.Gel_rub_test(outputfname+'/'+'R_hat',Mchains, Err, op_settings[5])
+                R_hat = MCMCmod.Gel_rub_test(outputfname / 'R_hat',Mchains, Err, op_settings[5])
             else:
                 R_hat = []
 
@@ -250,7 +254,7 @@ def main(args):
             Perr = tpseries.MCMC_harmfitpercentage(MCMC_mean, Excurr, True, **MEC_set)
 
             # something to print output text
-            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
+            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname / "result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
                                                    colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
 
     elif header[1] == 'TCDS':  # PINTS (yt-Isim)**2 for total current
@@ -270,7 +274,7 @@ def main(args):
             completion_time = (time.time() - t1)/60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname / 'Iter_log.txt',logtot)
 
             DCAC_method[0] = 0  # sets up to use tdiffsquare
             MEC_set['DCAC_method'] =  DCAC_method
@@ -283,10 +287,10 @@ def main(args):
             mean_var_out = CMAmod.CMA_meanval(results, var)
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname / 'result_file.txt',completion_time, space_holder, var_out,
                                                results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
-        elif header[2] == 'ADMCMC'or header[1] == 'any other MCMC':   # MCMC for current total
+        elif header[2] == 'ADMCMC' or 'MCMC' in header[1]:   # MCMC for current total
 
             MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': Excurr,
                        'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
@@ -316,16 +320,15 @@ def main(args):
             # prints and calculates the series of R-gelman statistic
             if op_settings[7] != 1:
                 R_hat = pints.rhat_all_params(chains)
-                #R_hat = MCMCmod.Gel_rub_test(outputfname + '/' + 'R_Hat.txt', chains, Err, op_settings[5])
             else:
                 R_hat = []
 
-            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
+            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname / "result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
                                                    colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
 
             # prints output as txt file
-            tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_log.txt', chains)  # prints the multi chain output
-            tpseries.MCMC_dist_logger2(outputfname+'/'+'Iter_log.txt', dist)  # saves the distrabution to a text file
+            tpseries.MCMC_para_logger2(outputfname / 'MCMC_parallel_log.txt', chains)  # prints the multi chain output
+            tpseries.MCMC_dist_logger2(outputfname / 'Iter_log.txt', dist)  # saves the distrabution to a text file
 
     elif header[1] == 'FTC':  # PINTS (yt-Isim)**2 for fourier transform of the current
 
@@ -343,7 +346,7 @@ def main(args):
             completion_time = (time.time() - t1)/60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname / 'Iter_log.txt',logtot)
 
             DCAC_method[0] = 0  # sets up to use tdiffsquare
             MEC_set['DCAC_method'] =  DCAC_method
@@ -356,10 +359,10 @@ def main(args):
             mean_var_out = CMAmod.CMA_meanval(results, var)
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname / 'result_file.txt',completion_time, space_holder, var_out,
                                                results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
-        elif header[2] == 'ADMCMC'or header[1] == 'any other MCMC':   # MCMC for current total
+        elif header[2] == 'ADMCMC'or 'MCMC' in header[1]:   # MCMC for current total
 
             MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': EX_hil_store,
                        'scalvar': scalvar, 'funcvar': funcvar, 'funcvar_holder': funcvar_holder,
@@ -386,12 +389,12 @@ def main(args):
 
             fit = MCMC_mean  # sets up for printed inp file
 
-            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"global_out.txt", completion_time, len(dist), accept_rate, MCMC_mean,
+            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname / "global_out.txt", completion_time, len(dist), accept_rate, MCMC_mean,
                                                    colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
 
             # prints output as txt file
-            tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_logger.txt', chains)  # prints the multi chain output
-            tpseries.MCMC_dist_logger2(outputfname+'/'+'global_logger.txt', dist)  # saves the distrabution to a text file
+            tpseries.MCMC_para_logger2(outputfname / 'MCMC_parallel_logger.txt', chains)  # prints the multi chain output
+            tpseries.MCMC_dist_logger2(outputfname / 'global_logger.txt', dist)  # saves the distrabution to a text file
 
     elif header[1] == 'Log10FTC':  # PINTS (yt-Isim)**2 for fourier transform of the current
 
@@ -411,7 +414,7 @@ def main(args):
             completion_time = (time.time() - t1)/60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname / 'Iter_log.txt',logtot)
 
             DCAC_method[0] = 0  # sets up to use tdiffsquare
             MEC_set['DCAC_method'] =  DCAC_method
@@ -424,10 +427,10 @@ def main(args):
             mean_var_out = CMAmod.CMA_meanval(results, var)
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname /  'result_file.txt',completion_time, space_holder, var_out,
                                                results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
-        elif header[2] == 'ADMCMC'or header[1] == 'any other MCMC':   # MCMC for current total
+        elif header[2] == 'ADMCMC' or 'MCMC' in header[1]:   # MCMC for current total
             print('ADMCMC has not currently been developed for Log10FT logic')
             exit()
             MEC_set = {'data': data, 'var': var, 'spaces': spaces, 'DCAC_method': DCAC_method, 'Exp_data': EX_hil_store,
@@ -454,12 +457,12 @@ def main(args):
 
             fit = MCMC_mean  # sets up for printed inp file
 
-            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"global_out.txt", MCMC_time, len(dist), accept_rate, MCMC_mean,
+            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname / "global_out.txt", MCMC_time, len(dist), accept_rate, MCMC_mean,
                                                    colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
 
             # prints output as txt file
-            tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_logger.txt', chains)  # prints the multi chain output
-            tpseries.MCMC_dist_logger2(outputfname+'/'+'global_logger.txt', dist)  # saves the distrabution to a text file
+            tpseries.MCMC_para_logger2(outputfname / 'MCMC_parallel_logger.txt', chains)  # prints the multi chain output
+            tpseries.MCMC_dist_logger2(outputfname / 'global_logger.txt', dist)  # saves the distrabution to a text file
 
     elif header[1] == 'HEPWsigma':
         # CMA_ES method for multivariate method
@@ -476,7 +479,7 @@ def main(args):
             completion_time = (time.time() - t1) / 60
 
             # plot logger file
-            Scripgen.iter_logger(outputfname+'/Iter_log.txt',logtot)
+            Scripgen.iter_logger(outputfname /  'Iter_log.txt',logtot)
 
             DCAC_method[0] = 1  # sets up to use the Perr method
             MEC_set['DCAC_method'] = DCAC_method
@@ -488,7 +491,7 @@ def main(args):
             mean_var_out = CMAmod.CMA_meanval(results, var)
 
             # treat output here
-            standCMA.PINT_CMAES_TOTCURR_output(outputfname+'/result_file.txt',completion_time, space_holder, var_out,
+            standCMA.PINT_CMAES_TOTCURR_output(outputfname /  'result_file.txt',completion_time, space_holder, var_out,
                                                results, mean_var_out, DCAC_method,Perr,header,MEC_set)
 
         # multivariate ADMCMC
@@ -505,7 +508,7 @@ def main(args):
             completion_time = (time.time() - t1) / 60
 
             # creates the parameters output files
-            tpseries.MCMC_para_logger2(outputfname+'/'+'MCMC_parallel_log.txt', Mchains)  # prints the multi chain output
+            tpseries.MCMC_para_logger2(outputfname / 'MCMC_parallel_log.txt', Mchains)  # prints the multi chain output
 
             #combines and plots the multplie chains to one
             dist = []
@@ -519,7 +522,7 @@ def main(args):
             dist = np.array(dist)
             Err = np.array(Err)
 
-            MCMCmod.MCMC_dist_logger(outputfname+'/'+'Iter_log.txt', dist,Err)  # saves the distrabution to a text file
+            MCMCmod.MCMC_dist_logger(outputfname / 'Iter_log.txt', dist,Err)  # saves the distrabution to a text file
 
             # something to calculate the covarence and statistic values
             MCMC_mean, colapsed_std, cal_covar, covar_std, corr_matrix = MCMCmod.covarinence_stat(dist, op_settings[5])
@@ -528,7 +531,7 @@ def main(args):
 
             # prints and calculates the series of R-gelman statistic
             if op_settings[7] != 1:
-                R_hat = MCMCmod.Gel_rub_test(outputfname+'/'+'R_Hat.txt',Mchains, Err, op_settings[5])
+                R_hat = MCMCmod.Gel_rub_test(outputfname / 'R_Hat.txt',Mchains, Err, op_settings[5])
             else:
                 R_hat = []
 
@@ -536,16 +539,15 @@ def main(args):
             Perr = tpseries.MCMC_harmfitpercentage(MCMC_mean,Excurr,True, **MEC_set)
 
             # something to print output text
-            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname+'/'+"result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
+            standADMCMC.PINT_ADMCMC_TOTCURR_output(outputfname / "result_file.txt", completion_time, len(dist), accept_rate, MCMC_mean,
                                                    colapsed_std, phi0, covar_std, cal_covar, corr_matrix,R_hat, header, MEC_set)
 
         else:
             print('Incorrect optimisation method passed for HEPWsigma Fitting method')
 
     else:
-        print('Incorrect header files where used')
-        exit()
-
+        raise ValueError(f"""Incorrect header files where used with value {header[1]}, 
+                         try HarmPerFit, Bayes_ExpHarmPerFit, TCDS""")
 
      # rextracts the experimental data
     x = header[1] # holds this so that the method can go through and only get the 1st current
@@ -563,79 +565,82 @@ def main(args):
     header[1] = x
 
     #something here to print the MECSim input best fit file
-    with MLsp.cd(outputfname):
-        # writes the mecsim output to file
-        fit = MLsp.MECsim_noisepararemover(fit,var)
-        MLsp.MECSiminpwriter(fit, **MEC_set)
+    #with MLsp.cd(outputfname):
+    # writes the mecsim output to file
+    fit = MLsp.MECsim_noisepararemover(fit,var)
+    MLsp.MECSiminpwriter(outputfname / "Master.inp", fit, **MEC_set)
 
-        # simulate the best fit
-        Scurr = MLsp.Iterative_MECSim_Curr(*[fit], **MEC_set)
+    # simulate the best fit
+    Scurr = MLsp.Iterative_MECSim_Curr(*[fit], **MEC_set)
 
-        # gets a linear time array
-        Exptimearray = np.linspace(0,Extime,len(Extotcurr))
+    # gets a linear time array
+    Exptimearray = np.linspace(0,Extime,len(Extotcurr))
 
-        Simtimearray = np.linspace(0,Extime,len(Scurr))
-        Simvoltage = Scripgen.outputsetter(data,AC_freq, [AC_amp])
+    Simtimearray = np.linspace(0,Extime,len(Scurr))
+    Simvoltage = Scripgen.outputsetter(data,AC_freq, [AC_amp])
 
-        # plots and saves output from mecsim
-        MECheader = Scripgen.MECoutsetter(data, AC_freq, [AC_amp])
-        if datatype != 2:
-            Scripgen.outputwriter('MEC_Sim_output_bfit', MECheader, Simvoltage, Scurr, Simtimearray)
+    # plots and saves output from mecsim
+    MECheader = Scripgen.MECoutsetter(data, AC_freq, [AC_amp])
+    if datatype != 2:
+        Scripgen.outputwriter(outputfname / 'MEC_Sim_output_bfit.txt', MECheader, Simvoltage, Scurr, Simtimearray)
 
-        # plot the total current
-        #Scurr, Nsimdeci, Nex = MLsp.EXPtotcurrtreatment(Scurr, Extime, truntime, op_settings)
+    # plot the total current
+    #Scurr, Nsimdeci, Nex = MLsp.EXPtotcurrtreatment(Scurr, Extime, truntime, op_settings)
+    plt.figure()
+    plt.plot(Exptimearray, Extotcurr,label='Experimental')
+    Ndeci = int(len(Scurr) / op_settings[2])
+    plt.plot(Simtimearray, Scurr,label='Simulated')
+    plt.legend()
+    plt.xlabel('Time (sec)')
+    plt.ylabel('Current (A)')
+    plt.savefig(outputfname / 'totcurrent.png')
+
+    plt.close()
+
+    #calculates  the current output
+    if header[1] == 'FTC' or header[1] == 'Log10FTC':
+        log10ex,freqex = plotter.logten_extractor(Extotcurr,Exptimearray[-1], truntime,bandwidth, AC_freq)
+        log10sim, freqsim = plotter.logten_extractor(Scurr, Simtimearray[-1], truntime, bandwidth, AC_freq)
+
         plt.figure()
-        plt.plot(Exptimearray, Extotcurr,label='Experimental')
-        Ndeci = int(len(Scurr) / op_settings[2])
-        plt.plot(Simtimearray, Scurr,label='Simulated')
-        plt.legend()
-        plt.xlabel('Time (sec)')
-        plt.ylabel('Current (A)')
-        plt.savefig('totcurrent.png')
-
+        plt.plot(freqex, log10ex)
+        plt.plot(freqsim,log10sim)
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Log10(I) (A)')
+        plt.savefig(outputfname / 'powerspectrumcomparison.png')
         plt.close()
 
-        #calculates  the current output
-        if header[1] == 'FTC' or header[1] == 'Log10FTC':
-            log10ex,freqex = plotter.logten_extractor(Extotcurr,Exptimearray[-1], truntime,bandwidth, AC_freq)
-            log10sim, freqsim = plotter.logten_extractor(Scurr, Simtimearray[-1], truntime, bandwidth, AC_freq)
+    # plot the harmonics
+    if AC_amp != 0:
+        plotter.harmplot(outputfname / 'harmonicplots', Scurr, Simtimearray, Exharmcurr, Exptimearray, bandwidth, AC_freq, spaces)
 
-            plt.figure()
-            plt.plot(freqex, log10ex)
-            plt.plot(freqsim,log10sim)
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Log10(I) (A)')
-            plt.savefig('powerspectrumcomparison.png')
-            plt.close()
+    #plot the probability distrabutions
+    if header[2] == 'ADMCMC':
+        # plot postieriour probability
+        variblenames = plotter.density_plotter(outputfname / 'Probabilityplots', dist, space_holder, op_settings[5])
 
-        # plot the harmonics
-        if AC_amp != 0:
-            plotter.harmplot('harmonicplots', Scurr, Simtimearray, Exharmcurr, Exptimearray, bandwidth, AC_freq, spaces)
+        os.makedirs(outputfname / 'Convergenceplots')
 
-        #plot the probability distrabutions
-        if header[2] == 'ADMCMC':
-            # plot postieriour probability
-            variblenames = plotter.density_plotter('Probabilityplots', dist, space_holder, op_settings[5])
+        # plot convergence of parameters
+        if op_settings[7] != 1: # plot for multiple convergences chains
+            plotter.multiconverg(outputfname / 'Convergenceplots',Mchains,variblenames)
+        else:           # plot for a singular convergence
+            plotter.sinularconverg(outputfname / 'Convergenceplots',dist,variblenames)
 
-            os.makedirs('Convergenceplots')
+    elif header[2] == 'CMAES':
+        # gets the variable names
+        os.makedirs(outputfname / 'Convergenceplots')
+        variblenames = plotter.name_Allo(space_holder)
+        plotter.sinularconverg(outputfname / 'Convergenceplots',logtot,variblenames)
 
-            # plot convergence of parameters
-            if op_settings[7] != 1: # plot for multiple convergences chains
-                plotter.multiconverg('Convergenceplots',Mchains,variblenames)
-            else:           # plot for a singular convergence
-                plotter.sinularconverg('Convergenceplots',dist,variblenames)
+    timefull = (time.time() - t1)/60
+    print(f"Calculation complete in {timefull} minutes")
 
-        elif header[2] == 'CMAES':
-            # gets the variable names
-            os.makedirs('Convergenceplots')
-            variblenames = plotter.name_Allo(space_holder)
-            plotter.sinularconverg('Convergenceplots',logtot,variblenames)
-
-    return "Calculation complete"
+    return 
 
 # this runs the system and should make it work in MAC and Windows
 if __name__ == "__main__":
 
     args = sys.argv[1]
-    lala = main(args)
-    print(lala)
+    main(args)
+    

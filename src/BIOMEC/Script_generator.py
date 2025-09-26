@@ -10,15 +10,15 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import ML_signal_processing as MLsp
-from subprocess import run
+from pathlib import Path
 
 
 #writes MECSim
-def MECSimwriter(data):
+def MECSimwriter(filename,data):
     
     n = len(data.index)
     i = 0 
-    f = open("Master.inp","w") # opens the input file for MECSIM at start ready for it to be rewritten
+    f = open(filename,"w") # opens the input file for MECSIM at start ready for it to be rewritten
     while i < n: #tells the competer to go through everyline
     
         f.write(str(data.iloc[i][0]))
@@ -39,10 +39,7 @@ def globalinreader(filename):
     #splits the inpfile into its important sections
     CMA_settings = globalin[0:nCMA_settings[0]]
     data = globalin[nCMA_settings[0] + 1:nExp[0]] # will need to be fixed in future updates to truncate at exdata
-    Exp_data = globalin[nExp[0] + 1::]  # experimental data
-    
-    #This needs to be moved till after CMA-Settings
-    #Exp_data = Exp_data[0].str.split('  ',expand=True).astype('float')# \t for tab sep files # '  ' for mecsim
+    Exp_data = globalin.iloc[nExp[0] + 1::][0].to_list() # experimental data
     
     return CMA_settings, data, Exp_data
 
@@ -690,9 +687,7 @@ def format_e_out(n):
 # writes the MECsim output to a txt file compadable with POT
 def outputwriter(filename,startpart,voltage,Scurr,timev):
 
-    name = filename + '.txt'
-
-    f = open(name, 'w')
+    f = open(filename, 'w')
     f.write(startpart)
 
     for i in range(len(Scurr)):
@@ -709,18 +704,15 @@ def compare_plot(filename,Exharm,simharm,truntime):
     # extracts the harmonics
     harmonics = []  # stores the harmoics
 
-    i = 0  # starts at DC
-    while i != len(Exharm[:,0]):
+    for i in range(len(Exharm.shape[0])):
 
-        #plt.rc('axes', prop_cycle=(cycler('color', ['k', 'r']) + cycler('linestyle', ['-', '--'])))
         plt.figure()
         plt.plot(np.linspace(truntime[0],truntime[0],len(Exharm[0,:])),Exharm[:,i])
         plt.plot(np.linspace(truntime[0],truntime[1], len(simharm[0, :])), simharm[:, i])
 
-        s = '/Harmonic%i.png' % i
-        plt.savefig(filename + s, bbox_inches='tight')
+        s = f'Harmonic{i}.png'
+        plt.savefig(filename / s, bbox_inches='tight')
         plt.close()
-        i += 1
 
     return
 
@@ -760,20 +752,42 @@ def outputsetter(data,AC_freq, AC_amp):
 # function for checking if the output file
 def outputfilegenertor(outputfname):
 
-    file = True
+    dir_exists = False
     i = 0
-    while file:
-        try:
-            if i == 0:
-                filename = outputfname
-                os.makedirs(filename)
-            else:
-                filename = outputfname +"_V" +str(i)
-                os.makedirs(filename)
-            file = False
-        except:
-            print("file already exists")
-        finally:
+    max_attempts = 21
+    s = outputfname
+    while not dir_exists and i < max_attempts:
+        if not s.is_dir(): # check if output file exists
+            os.makedirs(s)
+            dir_exists = True
+        else:  # try a new filename
             i += 1
+            s = Path(f"{outputfname}_V{i}")
 
-    return filename
+    if i == max_attempts and not dir_exists:
+        raise ValueError("ERROR: max output files number reached at {i}, try deleting some")
+
+    return s
+
+# this is used to check the file location and modify relative files
+def EXP_conversion(Exp_data, relative_path):
+
+    Exp_data2 = []
+
+    for s in Exp_data:
+        path_s = Path(s)
+        # check to see if raw path exists (checks absolute and relative)
+        if path_s.is_file():
+            Exp_data2.append(path_s)
+        else: # assume its relative to input file
+            path_s2 = relative_path / path_s
+            if path_s2.is_file():
+                Exp_data2.append(path_s2)
+            else:
+                s1 = Path(os.getcwd())
+                s1 = s1 / path_s
+                raise ValueError(f"""ERROR: experimental file can't be found in \n
+                                    following locations \n{path_s2.resolve()}, 
+                                    {s1.resolve()} or {path_s.resolve()}, TERMINATING.""")
+
+    return Exp_data2
