@@ -1,11 +1,10 @@
 BootStrap: debootstrap
-OSVersion: jammy
+OSVersion: noble
 MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
 %setup
     mkdir -p ${SINGULARITY_ROOTFS}/runcode  
-	cp -R BIOMEC/Analysiscode/. ${SINGULARITY_ROOTFS}/runcode/
-	cp BIOMEC/mecsim.cpython-310-x86_64-linux-gnu.so ${SINGULARITY_ROOTFS}/runcode/mecsim.cpython-310-x86_64-linux-gnu.so
+	cp -R src/BIOMEC/Analysiscode/. ${SINGULARITY_ROOTFS}/runcode/
 
 %files
     
@@ -31,7 +30,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 	
 	Licenses as per documentation
 	
-	Currenly set up to run on python 3.10 in unbuntu bionic working in a singulrity Version 3.1 container though higher should work
+	Currenly set up to run on python 3.12 in unbuntu bionic working in a singulrity Version 3.1 container though higher should work
 
 %post
     
@@ -40,15 +39,15 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     apt-get -y --force-yes update
     apt-get -y --force-yes install build-essential git
     apt-get -y --force-yes install gfortran
-    apt-get -y --force-yes install python3.10
+    apt-get -y --force-yes install python3.12
     apt-get -y --force-yes install software-properties-common
 	apt-get -y --force-yes install bc
     apt-add-repository  universe
     apt-get update
-    apt-get -y --force-yes install python3-pip python3.10-dev
-    python3.10 -m pip install --upgrade pip
-    python3.10 -m pip install pandas numpy scipy cma seaborn matplotlib
-	python3.10 -m pip install pints
+    apt-get -y --force-yes install python3-pip python3.12-dev
+    python3.12 -m pip install --upgrade pip
+    python3.12 -m pip install pandas numpy scipy cma seaborn matplotlib
+	python3.12 -m pip install pints
 	
 	# change permissions of files
     chmod -R 777 ${SINGULARITY_ROOTFS}/runcode
